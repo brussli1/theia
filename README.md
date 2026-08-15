@@ -1,16 +1,28 @@
 # Theia
 
-E-commerce storefront and catalog for ophthalmological equipment (sale, rental, and refurbished), serving Paraguay.
+E-commerce catalog and storefront for ophthalmological equipment, sold to professionals in Paraguay and abroad. See `CONTEXT.md` for the domain glossary.
 
 ## Layout
 
-- `backend/` — FastAPI API (catalog, commerce, admin), PostgreSQL via SQLAlchemy/asyncpg.
-- `frontend/` — Next.js 14 (App Router) storefront (to be built).
-- `docs/agents/` — agent configuration (issue tracker, triage labels, domain docs).
+- `backend/` — FastAPI API (catalog, commerce, admin), PostgreSQL via SQLAlchemy (async) + Alembic.
+- `frontend/` — Next.js 14 (App Router) storefront, TypeScript + Tailwind.
+- `docs/` — agent configuration (`docs/agents/`), research notes (`docs/research/`).
+- `compose.yaml` — Postgres + backend + frontend together.
 
-## Setup
+## Run with Docker
 
-See `backend/README.md` for backend instructions.
+```bash
+docker compose up
+```
+
+- Frontend: http://localhost:3000 (renders backend health)
+- Backend: http://localhost:8000
+- API docs: http://localhost:8000/docs
+
+## Local development
+
+- Backend: see `backend/README.md`.
+- Frontend: `cd frontend && npm install && npm run dev`.
 
 ## Agent skills
 

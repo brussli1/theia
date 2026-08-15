@@ -1,21 +1,34 @@
 # Theia backend
 
-FastAPI API for the Theia catalog and commerce. PostgreSQL via SQLAlchemy (async).
+FastAPI API for the Theia catalog and commerce. PostgreSQL via SQLAlchemy (async), Alembic for migrations.
 
 ## Run locally
 
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirement.txt
-export DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/theia"
-uvicorn main:app --reload
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+export DATABASE_URL="postgresql+asyncpg://theia:theia@localhost:5432/theia"
+uvicorn app.main:app --reload
+```
+
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+## Migrations
+
+```bash
+alembic upgrade head
 ```
 
 ## Structure
 
-- `main.py` — app entry point
-- `core/` — config + database
-- `models/` — SQLAlchemy models + Pydantic schemas
-- `crud/` — data access
-- `routers/` — API routes
+- `app/main.py` — app entry point
+- `app/api/` — routers (health, and later catalog, commerce, admin)
+- `app/core/` — config + database
+- `app/models/` — SQLAlchemy models + Pydantic schemas (landed in ticket #4)
+- `tests/` — HTTP-API-seam tests (pytest + httpx)
