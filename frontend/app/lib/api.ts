@@ -260,11 +260,13 @@ export function formatBrandCategory(brand: string | null, category: string | nul
 }
 
 /** A customer's registered identity (#14); used to see order and quote
- * history. The session token lives in the `auth_token` cookie. */
+ * history. The session token lives in the `auth_token` cookie. `role` is
+ * `admin` for accounts that may use the admin panel (#15). */
 export type User = {
   id: number;
   email: string;
   name: string;
+  role: "customer" | "admin";
 };
 
 /** The signed-in customer from the incoming request's cookie, or null when
@@ -305,4 +307,76 @@ export async function fetchAccountQuotes(): Promise<Quote[]> {
     throw new Error(`Account quotes request failed: ${response.status}`);
   }
   return (await response.json()) as Quote[];
+}
+
+// --- Admin panel (#15) ------------------------------------------------------
+// The panel's reads are server components too; the mutations are server
+// actions in lib/admin-actions.ts. Both translate the `auth_token` cookie.
+
+export type AdminProduct = {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  price_gs: number;
+  price_usd: string;
+  available: boolean;
+  orderable: boolean;
+  certifications: string[];
+  images: string[];
+  specifications: Specification[];
+  category_id: number | null;
+  brand_id: number | null;
+  category_name: string | null;
+  brand_name: string | null;
+  created_at: string;
+};
+
+export type AdminCategory = {
+  id: number;
+  slug: string;
+  name: string;
+  parent_id: number | null;
+};
+
+export type AdminBrand = {
+  id: number;
+  slug: string;
+  name: string;
+};
+
+export type AdminCollection = {
+  type: string;
+  product_ids: number[];
+};
+
+async function adminFetch<T>(path: string): Promise<T> {
+  const response = await fetch(`${BACKEND_URL}${path}`, {
+    cache: "no-store",
+    headers: { authorization: accountAuthorizationHeader() },
+  });
+  if (!response.ok) {
+    throw new Error(`Admin request failed: ${response.status}`);
+  }
+  return (await response.json()) as T;
+}
+
+export async function fetchAdminProducts(): Promise<AdminProduct[]> {
+  return adminFetch<AdminProduct[]>("/api/admin/products");
+}
+
+export async function fetchAdminProduct(id: number): Promise<AdminProduct> {
+  return adminFetch<AdminProduct>(`/api/admin/products/${id}`);
+}
+
+export async function fetchAdminCategories(): Promise<AdminCategory[]> {
+  return adminFetch<AdminCategory[]>("/api/admin/categories");
+}
+
+export async function fetchAdminBrands(): Promise<AdminBrand[]> {
+  return adminFetch<AdminBrand[]>("/api/admin/brands");
+}
+
+export async function fetchAdminCollections(): Promise<AdminCollection[]> {
+  return adminFetch<AdminCollection[]>("/api/admin/collections");
 }

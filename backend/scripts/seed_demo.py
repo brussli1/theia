@@ -14,7 +14,7 @@ import asyncio
 import logging
 import sys
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, text
 
 from app.core.database import async_session_factory
 from app.models.catalog import Brand, Category, Product
@@ -85,9 +85,21 @@ async def run(force: bool = False) -> bool:
         await session.commit()
         await _seed_collections(session)
         await session.commit()
+        await _sync_sequences(session)
         logging.info("Seeded %s products.", len(PRODUCTS))
         return True
 
+
+async def _sync_sequences(session) -> None:
+    """The seed rows carry explicit ids; advance the sequences so the first
+    API-created row does not collide with id 1 (admin panel, ticket #15)."""
+    for table in ("products", "categories", "brands"):
+        await session.execute(
+            text(
+                f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+                f"(SELECT COALESCE(MAX(id), 1) FROM {table}))"
+            )
+        )
 
 async def _seed_collections(session) -> None:
     for ctype, links in COLLECTIONS:

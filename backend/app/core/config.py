@@ -45,6 +45,18 @@ class Settings(BaseSettings):
     jwt_secret: str = ""
     jwt_expires_minutes: int = 60 * 24 * 30
 
+    # Admin panel (#15): when both `admin_email` and `admin_password` are set,
+    # the app bootstraps (or refreshes) that account with the `admin` role at
+    # startup. Empty by default like every credential in this repo.
+    admin_email: str = ""
+    admin_password: str = ""
+
+    # Product image uploads (#15): files are stored under `media_dir` and
+    # served by the backend at `/media/<file>`; `media_url` is the base the
+    # stored URLs are built from (the browser must be able to reach it).
+    media_dir: str = "media"
+    media_url: str = "http://localhost:8000"
+
     @property
     def debug(self) -> bool:
         return self.environment == "development"

@@ -23,9 +23,9 @@ export type AuthState = { error?: AuthError };
 /** Register and login both POST the same shape to the backend and, on
  * success, store the returned session token in the `auth_token` cookie
  * (the backend's Set-Cookie never reaches the browser, so it is mirrored
- * here), then navigate to the account page — a full reload, so the server
- * renders with the fresh session. Errors are returned so the form can show
- * a localized message. */
+ * here), then navigate — admins to the admin panel, everyone else to the
+ * account page — a full reload, so the server renders with the fresh
+ * session. Errors are returned so the form can show a localized message. */
 async function authRequest(path: string, formData: FormData): Promise<AuthState> {
   const response = await fetch(`${BACKEND_URL}/api/auth${path}`, {
     method: "POST",
@@ -49,9 +49,12 @@ async function authRequest(path: string, formData: FormData): Promise<AuthState>
     }
     return { error: "failed" };
   }
-  const { token } = (await response.json()) as { token: string };
+  const { token, user } = (await response.json()) as { token: string; user: { role: string } };
   cookies().set(AUTH_COOKIE, token, AUTH_COOKIE_OPTIONS);
   revalidatePath("/", "layout");
+  if (user.role === "admin") {
+    redirect("/admin");
+  }
   redirect("/cuenta");
 }
 

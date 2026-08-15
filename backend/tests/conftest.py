@@ -64,12 +64,11 @@ def client():
 
 def seed_products():
     def _adapt(row):
-        return [
-            psycopg2.extras.Json(value)
-            if isinstance(value, list) and value and isinstance(value[0], dict)
-            else value
-            for value in row
-        ]
+        adapted = list(row)
+        # The specifications JSONB column must be adapted as JSON: the default
+        # list adapter turns an empty list into an empty jsonb *object* ({}).
+        adapted[10] = psycopg2.extras.Json(adapted[10])
+        return adapted
 
     with _connect() as conn:
         with conn.cursor() as cursor:
@@ -103,6 +102,13 @@ def seed_products():
                         "VALUES (%s, %s, %s)",
                         (collection_id, product_id, position),
                     )
+            # The rows above carry explicit ids; advance the sequences so the
+            # first API-created row does not collide with id 1.
+            for table in ("products", "categories", "brands"):
+                cursor.execute(
+                    f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+                    f"(SELECT COALESCE(MAX(id), 1) FROM {table}))"
+                )
         conn.commit()
 
 

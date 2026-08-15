@@ -65,6 +65,10 @@ _Avoid_: basket, bag
 A customer's registered identity — an email and password — used to see their Order and QuoteRequest history. Guest checkout remains available without one, and orders/quote requests are linked to the User that created them. Colloquially an "account" (the account page is `/cuenta`).
 _Avoid_: profile, login (as a noun)
 
+**Admin**:
+A User with the admin role — the only identity that may use the admin panel (`/admin`). Registration can never grant the role; the configured `ADMIN_EMAIL`/`ADMIN_PASSWORD` bootstrap does.
+_Avoid_: operator, staff, moderator
+
 **Order**:
 A buyer's completed purchase of orderable Products.
 _Avoid_: purchase, transaction, sale

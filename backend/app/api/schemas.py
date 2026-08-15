@@ -167,6 +167,8 @@ class UserOut(BaseModel):
     id: int
     email: str
     name: str
+    # `customer` by default; `admin` gates the admin panel (#15).
+    role: Literal["customer", "admin"] = "customer"
 
 
 class RegisterIn(BaseModel):
@@ -187,3 +189,72 @@ class AuthOut(BaseModel):
 
     token: str
     user: UserOut
+
+
+# Admin panel (#15): the account-only management surface. Slugs are always
+# derived from names by the backend — admins never type them.
+
+
+class AdminProductIn(BaseModel):
+    name: str = Field(min_length=1, max_length=300)
+    description: str = Field(default="", max_length=10000)
+    price_gs: int = Field(ge=0)
+    price_usd: float = Field(ge=0)
+    available: bool = True
+    orderable: bool = True
+    certifications: list[str] = Field(default_factory=list)
+    images: list[str] = Field(default_factory=list)
+    specifications: list[Specification] = Field(default_factory=list)
+    category_id: int | None = None
+    brand_id: int | None = None
+
+
+class AdminProductOut(BaseModel):
+    id: int
+    slug: str
+    name: str
+    description: str
+    price_gs: int
+    price_usd: str
+    available: bool
+    orderable: bool
+    certifications: list[str]
+    images: list[str]
+    specifications: list[Specification]
+    category_id: int | None
+    brand_id: int | None
+    category_name: str | None
+    brand_name: str | None
+    created_at: datetime
+
+
+class AdminCategoryIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    parent_id: int | None = None
+
+
+class AdminCategoryOut(BaseModel):
+    id: int
+    slug: str
+    name: str
+    parent_id: int | None
+
+
+class AdminBrandIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+
+
+class AdminBrandOut(BaseModel):
+    id: int
+    slug: str
+    name: str
+
+
+class AdminCollectionIn(BaseModel):
+    """The ordered product ids of one curated collection; order is preserved."""
+
+    product_ids: list[int] = Field(default_factory=list)
+
+
+class AdminCollectionOut(AdminCollectionIn):
+    type: Literal["carousel", "popular", "promo"]

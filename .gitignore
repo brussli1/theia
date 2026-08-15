@@ -21,3 +21,6 @@ build/
 *.log
 .idea/
 .vscode/
+
+# Uploaded product images (#15): files land in backend/media/
+media/

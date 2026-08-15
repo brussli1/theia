@@ -64,6 +64,15 @@ async def get_current_user(
     return user
 
 
+async def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
+    """The signed-in account, required to be an admin; 403 otherwise (#15).
+    Registration can never grant the role — only the configured bootstrap
+    admin has it (see app/core/admin.py)."""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin required")
+    return current_user
+
+
 @router.post("/register", response_model=AuthOut, status_code=201)
 async def register(payload: RegisterIn, db: AsyncSession = Depends(get_db)) -> AuthOut:
     user = User(
@@ -102,4 +111,4 @@ async def me(current_user: User = Depends(get_current_user)) -> UserOut:
 
 
 def _user_out(user: User) -> UserOut:
-    return UserOut(id=user.id, email=user.email, name=user.name)
+    return UserOut(id=user.id, email=user.email, name=user.name, role=user.role)

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fetchCart, fetchCategories, type Facet } from "../lib/api";
+import { fetchCart, fetchCategories, fetchCurrentUser, type Facet } from "../lib/api";
 import { getDictionary, getLocale } from "../lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 
@@ -18,6 +18,12 @@ export default async function Header() {
     cartCount = cart.total_items;
   } catch {
     cartCount = 0;
+  }
+  let isAdmin = false;
+  try {
+    isAdmin = (await fetchCurrentUser())?.role === "admin";
+  } catch {
+    isAdmin = false;
   }
 
   return (
@@ -44,6 +50,11 @@ export default async function Header() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-4">
+          {isAdmin && (
+            <Link href="/admin" className="text-sm font-medium text-slate-600 hover:text-slate-900">
+              {t.admin.dashboard}
+            </Link>
+          )}
           <Link href="/cuenta" className="text-sm text-slate-600 hover:text-slate-900">
             {t.header.account}
           </Link>
