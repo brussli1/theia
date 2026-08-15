@@ -60,6 +60,14 @@ def client():
 
 
 def seed_products():
+    def _adapt(row):
+        return [
+            psycopg2.extras.Json(value)
+            if isinstance(value, list) and value and isinstance(value[0], dict)
+            else value
+            for value in row
+        ]
+
     with _connect() as conn:
         with conn.cursor() as cursor:
             cursor.executemany(
@@ -76,9 +84,9 @@ def seed_products():
                     (id, name, slug, description, price_gs, price_usd, available,
                      orderable, certifications, images, specifications,
                      category_id, brand_id, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, '[]', %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
-                PRODUCTS,
+                [_adapt(row) for row in PRODUCTS],
             )
         conn.commit()
 

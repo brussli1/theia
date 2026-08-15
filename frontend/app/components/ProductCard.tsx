@@ -1,4 +1,5 @@
-import { formatGs, formatUsd, type ProductCard } from "../lib/api";
+import Link from "next/link";
+import { formatBrandCategory, formatGs, formatUsd, type ProductCard } from "../lib/api";
 
 export default function ProductCardView({ product }: { product: ProductCard }) {
   const quoteOnly = !product.orderable;
@@ -30,11 +31,14 @@ export default function ProductCardView({ product }: { product: ProductCard }) {
             </span>
           )}
         </div>
-        <h3 className="line-clamp-2 text-sm font-medium text-slate-900">{product.name}</h3>
+        <Link
+          href={`/productos/${product.slug}`}
+          className="line-clamp-2 text-sm font-medium text-slate-900 hover:underline"
+        >
+          {product.name}
+        </Link>
         <p className="text-xs text-slate-500">
-          {product.brand ?? ""}
-          {product.brand && product.category ? " · " : ""}
-          {product.category ?? ""}
+          {formatBrandCategory(product.brand, product.category)}
         </p>
         <div className="mt-auto pt-2">
           <p className="text-sm font-semibold text-slate-900">{formatGs(product.price_gs)}</p>

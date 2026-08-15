@@ -30,7 +30,7 @@ def test_card_shape(seeded):
     assert item["name"] == "Auto-refractor Huvitz HRK-1"
     assert item["price_gs"] == 6850
     assert item["price_usd"] == "0.98"
-    assert item["image"] is None
+    assert item["image"] == "https://placehold.co/750x400?text=HRK-1"
     assert item["available"] is False
     assert item["orderable"] is True
     assert item["certifications"] == ["FDA"]

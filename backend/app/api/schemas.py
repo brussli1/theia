@@ -15,6 +15,27 @@ class ProductCard(BaseModel):
     category: str | None
 
 
+class Specification(BaseModel):
+    key: str
+    value: str
+
+
+class ProductDetail(BaseModel):
+    id: int
+    slug: str
+    name: str
+    description: str
+    price_gs: int
+    price_usd: str
+    images: list[str]
+    specifications: list[Specification]
+    available: bool
+    orderable: bool
+    certifications: list[str]
+    brand: str | None
+    category: str | None
+
+
 class Facet(BaseModel):
     slug: str
     name: str

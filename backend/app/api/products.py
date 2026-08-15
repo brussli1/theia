@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.schemas import Facet, ProductCard, ProductPage
+from app.api.schemas import Facet, ProductCard, ProductDetail, ProductPage
 from app.core.database import get_db
 from app.models.catalog import Brand, Category, Product
 
@@ -13,6 +13,14 @@ CERTIFICATIONS = {"FDA", "CE", "ISO"}
 
 def _escape_like(term: str) -> str:
     return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def _select_with_names() -> Select:
+    return (
+        select(Product, Brand.name, Category.name)
+        .join(Brand, Brand.id == Product.brand_id, isouter=True)
+        .join(Category, Category.id == Product.category_id, isouter=True)
+    )
 
 
 @router.get("", response_model=ProductPage)
@@ -31,11 +39,7 @@ async def list_products(
     if certification is not None and certification.upper() not in CERTIFICATIONS:
         raise HTTPException(status_code=422, detail="certification must be one of FDA, CE, ISO")
 
-    statement: Select = (
-        select(Product, Brand.name, Category.name)
-        .join(Brand, Brand.id == Product.brand_id, isouter=True)
-        .join(Category, Category.id == Product.category_id, isouter=True)
-    )
+    statement = _select_with_names()
 
     if q:
         pattern = f"%{_escape_like(q)}%"
@@ -95,4 +99,35 @@ async def list_products(
         pages=pages,
         categories=[Facet(slug=slug, name=name) for slug, name in category_rows],
         brands=[Facet(slug=slug, name=name) for slug, name in brand_rows],
+    )
+
+
+@router.get("/{slug}", response_model=ProductDetail)
+async def get_product(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+) -> ProductDetail:
+    row = (
+        await db.execute(
+            _select_with_names().where(Product.slug == slug)
+        )
+    ).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    product, brand_name, category_name = row
+    return ProductDetail(
+        id=product.id,
+        slug=product.slug,
+        name=product.name,
+        description=product.description,
+        price_gs=product.price_gs,
+        price_usd=f"{product.price_usd:.2f}",
+        images=product.images,
+        specifications=product.specifications,
+        available=product.available,
+        orderable=product.orderable,
+        certifications=product.certifications,
+        brand=brand_name,
+        category=category_name,
     )

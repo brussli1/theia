@@ -14,7 +14,7 @@ BRANDS = [
 ]
 
 # (id, name, slug, description, price_gs, price_usd, available, orderable,
-#  certifications, images, category_id, brand_id, created_at)
+#  certifications, images, specifications, category_id, brand_id, created_at)
 PRODUCTS = [
     (
         1,
@@ -26,7 +26,14 @@ PRODUCTS = [
         True,
         True,
         ["CE"],
-        [],
+        [
+            "https://placehold.co/750x400?text=VK-2s+1",
+            "https://placehold.co/750x400?text=VK-2s+2",
+        ],
+        [
+            {"key": "Magnification", "value": "10x-16x"},
+            {"key": "Camera", "value": "CCD"},
+        ],
         1,
         1,
         datetime(2024, 1, 10, tzinfo=timezone.utc),
@@ -41,7 +48,10 @@ PRODUCTS = [
         True,
         False,
         [],
-        [],
+        ["https://placehold.co/750x400?text=HHOU+7040"],
+        [
+            {"key": "Type", "value": "Refraction unit"},
+        ],
         1,
         3,
         datetime(2024, 2, 10, tzinfo=timezone.utc),
@@ -56,7 +66,11 @@ PRODUCTS = [
         False,
         True,
         ["FDA"],
-        [],
+        ["https://placehold.co/750x400?text=HRK-1"],
+        [
+            {"key": "Measurement range", "value": "-20D to +20D"},
+            {"key": "Keratometry", "value": "Yes"},
+        ],
         2,
         2,
         datetime(2024, 3, 10, tzinfo=timezone.utc),
@@ -71,6 +85,7 @@ PRODUCTS = [
         True,
         True,
         ["ISO"],
+        [],
         [],
         1,
         1,

@@ -1,0 +1,41 @@
+import { expect, test } from "@playwright/test";
+
+test("PDP renders gallery, specs, badges, and visitor-currency price", async ({ page }) => {
+  await page.goto("/productos/high-performance-digital-imaging-system-vk-2s");
+  await expect(page.getByRole("heading", { name: /VK-2s/ })).toBeVisible();
+  await expect(page.getByText("CE", { exact: true })).toBeVisible();
+  await expect(page.getByText("Fundus camera imaging system")).toBeVisible();
+  await expect(page.getByText("Magnification")).toBeVisible();
+  await expect(page.getByText("10x-16x")).toBeVisible();
+  const price = page.getByTestId("price");
+  await expect(price).toContainText(/\$ 142\.86|Gs 1\.000\.000/);
+  await page.getByLabel("Imagen 2").click();
+  await expect(page.getByLabel("Imagen 2")).toHaveClass(/border-slate-900/);
+});
+
+test("orderable product shows add-to-cart, not quote", async ({ page }) => {
+  await page.goto("/productos/high-performance-digital-imaging-system-vk-2s");
+  await expect(page.getByRole("button", { name: "Agregar al carrito" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Solicitar cotización" })).toHaveCount(0);
+});
+
+test("quote-only product shows quote action, not add-to-cart", async ({ page }) => {
+  await page.goto("/productos/hhou-7040-refraction-units");
+  await expect(page.getByRole("button", { name: "Solicitar cotización" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Agregar al carrito" })).toHaveCount(0);
+});
+
+test("unavailable product is clearly marked; actions follow orderability", async ({
+  page,
+}) => {
+  await page.goto("/productos/auto-refractor-huvitz-hrk-1");
+  await expect(page.getByText("Producto no disponible")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Agregar al carrito" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Solicitar cotización" })).toHaveCount(0);
+});
+
+test("listing card links to the PDP", async ({ page }) => {
+  await page.goto("/productos");
+  await page.getByText("High Performance Digital Imaging System VK-2s").click();
+  await expect(page).toHaveURL(/\/productos\/high-performance-digital-imaging-system-vk-2s$/);
+});
