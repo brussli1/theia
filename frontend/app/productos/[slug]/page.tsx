@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { fetchProduct, fetchVisitorCurrency, formatBrandCategory } from "../../lib/api";
 import { formatPrice } from "../../lib/currency";
 import { getDictionary, getLocale } from "../../lib/i18n";
+import AddToCartButton from "./AddToCartButton";
 import Gallery from "./Gallery";
 
 export const dynamic = "force-dynamic";
@@ -52,12 +53,7 @@ export default async function ProductoPage({
             {formatPrice(product.price_gs, product.price_usd, currency, locale)}
           </p>
           {product.orderable ? (
-            <button
-              type="button"
-              className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
-            >
-              {t.product.addToCart}
-            </button>
+            <AddToCartButton slug={product.slug} t={t.product} />
           ) : (
             <button
               type="button"

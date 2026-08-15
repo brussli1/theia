@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.cart import router as cart_router
 from app.api.catalog import router as catalog_router
 from app.api.geo import router as geo_router
 from app.api.health import router as health_router
@@ -12,3 +13,4 @@ app.include_router(health_router)
 app.include_router(products_router)
 app.include_router(catalog_router)
 app.include_router(geo_router)
+app.include_router(cart_router)

@@ -106,6 +106,34 @@ export async function fetchCategories(): Promise<Facet[]> {
   return (await response.json()) as Facet[];
 }
 
+export type CartItem = {
+  id: number;
+  slug: string;
+  name: string;
+  price_gs: number;
+  price_usd: string;
+  image: string | null;
+  quantity: number;
+};
+
+export type Cart = {
+  cart_id: string;
+  total_items: number;
+  items: CartItem[];
+};
+
+/** Visitor cart, forwarded from the incoming request's cookie. Server-only. */
+export async function fetchCart(): Promise<Cart> {
+  const response = await fetch(`${BACKEND_URL}/api/cart`, {
+    cache: "no-store",
+    headers: { cookie: headers().get("cookie") ?? "" },
+  });
+  if (!response.ok) {
+    throw new Error(`Cart request failed: ${response.status}`);
+  }
+  return (await response.json()) as Cart;
+}
+
 export async function fetchBrands(): Promise<Facet[]> {
   const response = await fetch(`${BACKEND_URL}/api/brands`, { cache: "no-store" });
   if (!response.ok) {

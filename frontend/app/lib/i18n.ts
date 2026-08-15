@@ -51,6 +51,7 @@ const es = {
   product: {
     unavailable: "Producto no disponible",
     addToCart: "Agregar al carrito",
+    added: "Agregado al carrito",
     requestQuote: "Solicitar cotización",
     description: "Descripción",
     specifications: "Especificaciones",
@@ -62,6 +63,14 @@ const es = {
     viewProducts: "Ver productos",
     backend: "Backend",
     database: "Base de datos",
+  },
+  cart: {
+    title: "Carrito",
+    empty: "Tu carrito está vacío.",
+    subtotal: "Subtotal",
+    quantity: "Cantidad",
+    remove: "Quitar",
+    continueShopping: "Seguir comprando",
   },
   catalogError: "No se pudo cargar el catálogo.",
 };
@@ -110,6 +119,7 @@ const en: typeof es = {
   product: {
     unavailable: "Product unavailable",
     addToCart: "Add to cart",
+    added: "Added to cart",
     requestQuote: "Request a quote",
     description: "Description",
     specifications: "Specifications",
@@ -121,6 +131,14 @@ const en: typeof es = {
     viewProducts: "View products",
     backend: "Backend",
     database: "Database",
+  },
+  cart: {
+    title: "Cart",
+    empty: "Your cart is empty.",
+    subtotal: "Subtotal",
+    quantity: "Quantity",
+    remove: "Remove",
+    continueShopping: "Continue shopping",
   },
   catalogError: "The catalog could not be loaded.",
 };

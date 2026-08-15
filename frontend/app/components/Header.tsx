@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fetchCategories, type Facet } from "../lib/api";
+import { fetchCart, fetchCategories, type Facet } from "../lib/api";
 import { getDictionary, getLocale } from "../lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 
@@ -11,6 +11,13 @@ export default async function Header() {
     categories = await fetchCategories();
   } catch {
     categories = [];
+  }
+  let cartCount = 0;
+  try {
+    const cart = await fetchCart();
+    cartCount = cart.total_items;
+  } catch {
+    cartCount = 0;
   }
 
   return (
@@ -33,7 +40,18 @@ export default async function Header() {
             </Link>
           ))}
         </nav>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-4">
+          <Link href="/carrito" className="relative text-sm text-slate-600 hover:text-slate-900">
+            {t.cart.title}
+            {cartCount > 0 && (
+              <span
+                data-testid="cart-badge"
+                className="absolute -right-3 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1 text-xs font-semibold text-white"
+              >
+                {cartCount}
+              </span>
+            )}
+          </Link>
           <LocaleSwitcher currentLocale={locale} />
         </div>
       </div>

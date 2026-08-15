@@ -49,7 +49,9 @@ def clean_tables(database):
     with _connect() as conn:
         conn.autocommit = True
         with conn.cursor() as cursor:
-            cursor.execute("TRUNCATE products, brands, categories RESTART IDENTITY CASCADE")
+            cursor.execute(
+                "TRUNCATE cart_items, carts, products, brands, categories RESTART IDENTITY CASCADE"
+            )
     yield
 
 

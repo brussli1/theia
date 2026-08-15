@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ProductCard(BaseModel):
@@ -49,3 +49,28 @@ class ProductPage(BaseModel):
     pages: int
     categories: list[Facet]
     brands: list[Facet]
+
+
+class CartItemOut(BaseModel):
+    id: int
+    slug: str
+    name: str
+    price_gs: int
+    price_usd: str
+    image: str | None
+    quantity: int
+
+
+class CartOut(BaseModel):
+    cart_id: str
+    total_items: int
+    items: list[CartItemOut]
+
+
+class AddItemIn(BaseModel):
+    product_slug: str
+    quantity: int = Field(1, ge=1)
+
+
+class UpdateItemIn(BaseModel):
+    quantity: int = Field(ge=1)
