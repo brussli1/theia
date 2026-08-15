@@ -25,3 +25,6 @@ build/
 
 # Uploaded product images (#15): files land in backend/media/
 media/
+
+# USO catalog crawl artifact (backend/scripts/uso_inventory.py)
+uso_inventory.json
