@@ -67,13 +67,13 @@ export default async function PedidoPage({
   if (!order) {
     return (
       <main className="mx-auto max-w-6xl p-8">
-        <h1 className="text-2xl font-semibold text-slate-900">{t.order.track}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.order.track}</h1>
         <div className="mt-8 rounded-xl border border-slate-200 bg-white p-6 text-center">
           <p className="text-sm text-slate-500">{t.order.notFound}</p>
           <p className="mt-1 text-sm text-slate-400">{t.order.notFoundHint}</p>
           <Link
             href="/pedido"
-            className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="mt-4 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             {t.order.track}
           </Link>
@@ -98,7 +98,7 @@ export default async function PedidoPage({
   return (
     <main className="mx-auto max-w-6xl p-8">
       <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h1 className="text-2xl font-semibold text-slate-900">{t.order.confirmationTitle}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.order.confirmationTitle}</h1>
         <p className="mt-2 text-sm text-slate-500">{t.order.confirmationSubtitle}</p>
         <div className="mt-4 flex flex-wrap gap-6 text-sm">
           <p>
@@ -156,7 +156,7 @@ export default async function PedidoPage({
                   href={WHATSAPP_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+                  className="rounded-md bg-brand-600 px-4 py-2 text-white hover:bg-brand-700"
                 >
                   {t.order.wuWhatsApp}
                 </a>
@@ -233,7 +233,7 @@ export default async function PedidoPage({
           </section>
           <Link
             href="/pedido"
-            className="block rounded-md bg-slate-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-slate-700"
+            className="block rounded-md bg-brand-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-brand-700"
           >
             {t.order.track}
           </Link>

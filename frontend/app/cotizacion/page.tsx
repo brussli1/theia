@@ -57,7 +57,7 @@ export default async function CotizacionPage({
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{t.quote.title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.quote.title}</h1>
       <p className="mt-2 text-sm text-slate-500">{t.quote.subtitle}</p>
       <QuoteForm
         t={t.quote}

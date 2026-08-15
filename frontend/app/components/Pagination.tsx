@@ -17,7 +17,7 @@ export default function Pagination({
   return (
     <nav className="mt-8 flex items-center justify-center gap-4 text-sm">
       {page > 1 ? (
-        <Link href={buildPageUrl(page - 1)} className="text-slate-700 hover:underline">
+        <Link href={buildPageUrl(page - 1)} className="text-brand-700 hover:underline">
           {t.pagination.previous}
         </Link>
       ) : (
@@ -25,7 +25,7 @@ export default function Pagination({
       )}
       <span className="text-slate-500">{t.pagination.pageOf(page, pages)}</span>
       {page < pages ? (
-        <Link href={buildPageUrl(page + 1)} className="text-slate-700 hover:underline">
+        <Link href={buildPageUrl(page + 1)} className="text-brand-700 hover:underline">
           {t.pagination.next}
         </Link>
       ) : (

@@ -18,9 +18,9 @@ export default function ProductCardView({
   return (
     <div
       data-testid="product-card"
-      className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white"
+      className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg"
     >
-      <div className="flex h-40 items-center justify-center bg-slate-100">
+      <div className="flex aspect-[4/3] items-center justify-center bg-slate-100">
         {product.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
@@ -43,7 +43,7 @@ export default function ProductCardView({
         </div>
         <Link
           href={`/productos/${product.slug}`}
-          className="line-clamp-2 text-sm font-medium text-slate-900 hover:underline"
+          className="line-clamp-2 text-sm font-medium text-slate-900 hover:text-brand-700 hover:underline"
         >
           {product.name}
         </Link>
@@ -51,7 +51,7 @@ export default function ProductCardView({
           {formatBrandCategory(product.brand, product.category)}
         </p>
         <div className="mt-auto pt-2">
-          <p className="text-sm font-semibold text-slate-900" data-testid="card-price">
+          <p className="text-sm font-semibold text-brand-800" data-testid="card-price">
             {formatPrice(product.price_gs, product.price_usd, currency, locale)}
           </p>
         </div>

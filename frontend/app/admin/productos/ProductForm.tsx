@@ -6,7 +6,7 @@ import type { AdminBrand, AdminCategory, AdminProduct, Specification } from "../
 import { saveProduct, uploadImage } from "../../lib/admin-actions";
 
 const inputClass =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none";
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none";
 
 const labelClass = "mb-1 block text-sm font-medium text-slate-700";
 
@@ -257,7 +257,7 @@ export default function ProductForm({
                   setSpecifications((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
                 data-testid="admin-spec-remove"
-                className="text-sm text-slate-500 hover:text-slate-900"
+                className="text-sm text-slate-500 hover:text-brand-700"
               >
                 {t.removeSpecification}
               </button>
@@ -268,7 +268,7 @@ export default function ProductForm({
           type="button"
           onClick={() => setSpecifications((current) => [...current, { key: "", value: "" }])}
           data-testid="admin-spec-add"
-          className="mt-2 text-sm font-medium text-slate-700 hover:text-slate-900"
+          className="mt-2 text-sm font-medium text-slate-700 hover:text-brand-700"
         >
           {t.addSpecification}
         </button>
@@ -291,7 +291,7 @@ export default function ProductForm({
                   type="button"
                   onClick={() => setImages((current) => current.filter((item) => item !== url))}
                   data-testid="admin-image-remove"
-                  className="text-xs text-slate-500 hover:text-slate-900"
+                  className="text-xs text-slate-500 hover:text-brand-700"
                 >
                   {t.removeImage}
                 </button>
@@ -322,7 +322,7 @@ export default function ProductForm({
       <button
         type="submit"
         data-testid="admin-product-save"
-        className="rounded-md bg-slate-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
+        className="rounded-md bg-brand-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
       >
         {t.save}
       </button>

@@ -36,7 +36,7 @@ export default async function EditProductPage({ params }: { params: { id: string
         <h1 className="text-2xl font-semibold text-slate-900">{t.admin.productNotFound}</h1>
         <Link
           href="/admin/productos"
-          className="mt-4 inline-block text-sm text-slate-600 hover:text-slate-900"
+          className="mt-4 inline-block text-sm text-slate-600 hover:text-brand-700"
         >
           {t.admin.productsTitle}
         </Link>

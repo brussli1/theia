@@ -28,9 +28,9 @@ export default async function AdminProductsPage() {
         <Link
           href="/admin/productos/nuevo"
           data-testid="admin-new-product"
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
         >
-          {t.admin.newProduct}
+          + {t.admin.newProduct}
         </Link>
       </div>
 
@@ -64,7 +64,7 @@ export default async function AdminProductsPage() {
                 <Link
                   href={`/admin/productos/${product.id}`}
                   data-testid="admin-edit-product"
-                  className="font-medium text-slate-700 hover:text-slate-900"
+                  className="font-medium text-slate-700 hover:text-brand-700"
                 >
                   {t.admin.edit}
                 </Link>
@@ -72,7 +72,7 @@ export default async function AdminProductsPage() {
                   <button
                     type="submit"
                     data-testid="admin-toggle-availability"
-                    className="font-medium text-slate-700 hover:text-slate-900"
+                    className="font-medium text-slate-700 hover:text-brand-700"
                   >
                     {product.available ? t.admin.deactivate : t.admin.activate}
                   </button>

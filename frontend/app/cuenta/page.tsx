@@ -60,7 +60,7 @@ export default async function CuentaPage() {
     const { welcome: _welcome, ...accountStrings } = t.account;
     return (
       <main className="mx-auto max-w-4xl p-8">
-        <h1 className="text-2xl font-semibold text-slate-900">{t.account.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.account.title}</h1>
         <p className="mt-2 text-sm text-slate-500">{t.account.subtitle}</p>
         <div className="mt-8">
           <AuthForms t={accountStrings} />
@@ -92,7 +92,7 @@ export default async function CuentaPage() {
     <main className="mx-auto max-w-4xl p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             {t.account.welcome(user.name)}
           </h1>
           <p className="mt-1 text-sm text-slate-500">{t.account.welcomeSubtitle}</p>
@@ -197,7 +197,7 @@ export default async function CuentaPage() {
 
       <Link
         href="/"
-        className="mt-8 inline-block text-sm text-slate-600 hover:text-slate-900"
+        className="mt-8 inline-block text-sm text-slate-600 hover:text-brand-700"
       >
         {t.account.backHome}
       </Link>

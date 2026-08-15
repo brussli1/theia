@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AuthForms from "../cuenta/AuthForms";
+import NavLink from "../components/NavLink";
 import { fetchCurrentUser, type User } from "../lib/api";
 import { getDictionary, getLocale } from "../lib/i18n";
 import { pageMetadata } from "../lib/metadata";
@@ -59,7 +60,7 @@ export default async function AdminLayout({
     return (
       <main className="mx-auto max-w-4xl p-8">
         <h1 className="text-2xl font-semibold text-slate-900">{t.admin.accessDenied}</h1>
-        <Link href="/" className="mt-4 inline-block text-sm text-slate-600 hover:text-slate-900">
+        <Link href="/" className="mt-4 inline-block text-sm text-slate-600 hover:text-brand-700">
           {t.admin.backToStore}
         </Link>
       </main>
@@ -78,22 +79,23 @@ export default async function AdminLayout({
 
   return (
     <div>
-      <nav className="border-b border-slate-200 bg-white">
+      <nav className="border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 p-4 text-sm">
-          <span className="text-lg font-semibold text-slate-900">Theia</span>
+          <span className="text-lg font-bold tracking-tight text-slate-900">
+            Theia<span className="text-brand-600">.</span>
+          </span>
           {sections.map((section) => (
-            <Link
+            <NavLink
               key={section.href}
               href={section.href}
-              data-testid={section.testid}
-              className="text-slate-600 hover:text-slate-900"
+              testid={section.testid}
             >
               {section.label}
-            </Link>
+            </NavLink>
           ))}
           <Link
             href="/"
-            className="ml-auto text-slate-600 hover:text-slate-900"
+            className="ml-auto text-sm text-slate-600 hover:text-brand-700"
           >
             {t.admin.backToStore}
           </Link>

@@ -11,7 +11,7 @@ export default function ContentPage({
 }) {
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900">{title}</h1>
       {intro && <p className="mt-2 text-sm text-slate-500">{intro}</p>}
       <div className="mt-6">{children}</div>
     </main>

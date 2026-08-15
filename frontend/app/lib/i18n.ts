@@ -66,6 +66,11 @@ const es = {
     promotions: "Promociones",
     previous: "Anterior",
     next: "Siguiente",
+    heroTitle: "Equipos oftalmológicos para profesionales",
+    heroSubtitle:
+      "Catálogo y tienda online en Paraguay y el exterior: equipos nuevos, usados y alquileres.",
+    heroCta: "Ver productos",
+    heroQuoteCta: "Solicitar cotización",
   },
   cart: {
     title: "Carrito",
@@ -340,6 +345,7 @@ const es = {
       legal: "Legal",
       terms: "Términos de uso",
       privacy: "Política de privacidad",
+      admin: "Admin",
     },
     catalog: {
       title: "Productos",
@@ -605,6 +611,11 @@ const en: typeof es = {
     promotions: "Promotions",
     previous: "Previous",
     next: "Next",
+    heroTitle: "Ophthalmological equipment for professionals",
+    heroSubtitle:
+      "Online catalog and store in Paraguay and abroad: new and used equipment, and rentals.",
+    heroCta: "Browse products",
+    heroQuoteCta: "Request a quote",
   },
   cart: {
     title: "Cart",
@@ -878,6 +889,7 @@ const en: typeof es = {
       legal: "Legal",
       terms: "Terms of use",
       privacy: "Privacy policy",
+      admin: "Admin",
     },
     catalog: {
       title: "Products",

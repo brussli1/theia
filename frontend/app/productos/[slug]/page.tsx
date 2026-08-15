@@ -70,7 +70,7 @@ export default async function ProductoPage({
               </span>
             ))}
           </div>
-          <h1 className="text-2xl font-semibold text-slate-900">{product.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">{product.name}</h1>
           <p className="text-sm text-slate-500">
             {formatBrandCategory(product.brand, product.category)}
           </p>
@@ -79,7 +79,7 @@ export default async function ProductoPage({
               {t.product.unavailable}
             </p>
           )}
-          <p className="text-3xl font-semibold text-slate-900" data-testid="price">
+          <p className="text-3xl font-semibold text-brand-800" data-testid="price">
             {formatPrice(product.price_gs, product.price_usd, currency, locale)}
           </p>
           {product.orderable ? (
@@ -88,7 +88,7 @@ export default async function ProductoPage({
             <Link
               href={`/cotizacion?producto=${product.slug}`}
               data-testid="request-quote"
-              className="inline-block rounded-md bg-slate-900 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-slate-700"
+              className="inline-block rounded-md bg-brand-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-brand-700"
             >
               {t.product.requestQuote}
             </Link>

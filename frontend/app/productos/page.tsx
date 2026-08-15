@@ -60,7 +60,7 @@ export default async function ProductosPage({
 
   return (
     <main className="mx-auto max-w-6xl p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{t.header.products}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.header.products}</h1>
       <p className="mt-1 text-sm text-slate-500">{t.listing.productsCount(page.total)}</p>
       <div className="mt-6">
         <ProductFilters

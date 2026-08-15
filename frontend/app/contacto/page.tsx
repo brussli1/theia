@@ -45,7 +45,7 @@ export default async function ContactoPage() {
                   href={channel.href}
                   target={channel.href.startsWith("http") ? "_blank" : undefined}
                   rel={channel.href.startsWith("http") ? "noreferrer" : undefined}
-                  className="mt-1 block break-words text-sm text-slate-600 hover:text-slate-900"
+                  className="mt-1 block break-words text-sm text-slate-600 hover:text-brand-700"
                 >
                   {channel.value}
                 </Link>

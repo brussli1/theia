@@ -25,8 +25,8 @@ export default function LocaleSwitcher({ currentLocale }: { currentLocale: Local
           onClick={() => setLocale(locale)}
           className={`rounded-full px-2 py-0.5 font-medium uppercase ${
             locale === currentLocale
-              ? "bg-slate-900 text-white"
-              : "text-slate-500 hover:text-slate-900"
+              ? "bg-brand-600 text-white"
+              : "text-slate-500 hover:text-brand-700"
           }`}
         >
           {locale}

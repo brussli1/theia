@@ -34,7 +34,7 @@ export default function AddToCartButton({
       data-testid="add-to-cart"
       onClick={add}
       disabled={pending}
-      className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-70"
+      className="rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-70"
     >
       {added ? t.added : t.addToCart}
     </button>

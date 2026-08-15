@@ -99,7 +99,7 @@ export default function CollectionForm({
                       onClick={() => moveProduct(index, -1)}
                       aria-label={t.moveUp}
                       data-testid="admin-collection-up"
-                      className="text-slate-500 hover:text-slate-900 disabled:opacity-30"
+                      className="text-slate-500 hover:text-brand-700 disabled:opacity-30"
                     >
                       ↑
                     </button>
@@ -109,7 +109,7 @@ export default function CollectionForm({
                       onClick={() => moveProduct(index, 1)}
                       aria-label={t.moveDown}
                       data-testid="admin-collection-down"
-                      className="text-slate-500 hover:text-slate-900 disabled:opacity-30"
+                      className="text-slate-500 hover:text-brand-700 disabled:opacity-30"
                     >
                       ↓
                     </button>
@@ -141,7 +141,7 @@ export default function CollectionForm({
                     type="button"
                     onClick={() => addProduct(product.id)}
                     data-testid="admin-collection-add"
-                    className="shrink-0 text-sm font-medium text-slate-700 hover:text-slate-900"
+                    className="shrink-0 text-sm font-medium text-slate-700 hover:text-brand-700"
                   >
                     {t.addToCollection}
                   </button>
@@ -157,7 +157,7 @@ export default function CollectionForm({
         onClick={handleSave}
         disabled={pending}
         data-testid="admin-collection-save"
-        className="mt-4 rounded-md bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        className="mt-4 rounded-md bg-brand-600 px-5 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
       >
         {t.saveCollection}
       </button>

@@ -37,13 +37,13 @@ export default async function CarritoPage() {
 
   return (
     <main className="mx-auto max-w-6xl p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{t.cart.title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.cart.title}</h1>
       {!cart || cart.items.length === 0 ? (
         <div className="mt-8">
           <p className="text-sm text-slate-500">{t.cart.empty}</p>
           <Link
             href="/productos"
-            className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="mt-4 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             {t.cart.continueShopping}
           </Link>
@@ -83,13 +83,13 @@ export default async function CarritoPage() {
             </span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
-            <Link href="/pedido" className="text-sm text-slate-500 hover:text-slate-900">
+            <Link href="/pedido" className="text-sm text-slate-500 hover:text-brand-700">
               {t.cart.trackOrder}
             </Link>
             <Link
               href="/finalizar-compra"
               data-testid="go-to-checkout"
-              className="rounded-md bg-slate-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
+              className="rounded-md bg-brand-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
             >
               {t.cart.checkout}
             </Link>

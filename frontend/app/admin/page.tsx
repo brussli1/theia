@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
             key={section.href}
             href={section.href}
             data-testid={section.testid}
-            className="rounded-xl border border-slate-200 bg-white p-6 text-sm font-medium text-slate-900 hover:border-slate-400"
+            className="rounded-xl border border-slate-200 bg-white p-6 text-sm font-medium text-slate-900 transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
           >
             {section.label}
           </Link>

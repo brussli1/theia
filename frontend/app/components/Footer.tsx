@@ -24,68 +24,79 @@ export default async function Footer() {
     { href: "/privacidad", label: f.privacy },
   ];
   return (
-    <footer data-testid="footer" className="mt-12 border-t border-slate-200 bg-white">
-      <div className="mx-auto grid max-w-6xl gap-8 p-8 sm:grid-cols-3">
+    <footer data-testid="footer" className="mt-12 bg-slate-900 text-slate-300">
+      <div className="mx-auto grid max-w-6xl gap-8 px-8 py-12 sm:grid-cols-3">
         <div>
-          <p className="text-lg font-semibold text-slate-900">Theia</p>
-          <p className="mt-2 text-sm text-slate-500">{f.tagline}</p>
+          <p className="text-lg font-bold tracking-tight text-white">
+            Theia<span className="text-brand-400">.</span>
+          </p>
+          <p className="mt-2 text-sm text-slate-400">{f.tagline}</p>
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
             <a
               href={WHATSAPP_URL}
               target="_blank"
               rel="noreferrer"
-              className="text-slate-600 hover:text-slate-900"
+              className="text-slate-300 hover:text-brand-400"
             >
               {t.pages.contacto.whatsapp}
             </a>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="text-slate-600 hover:text-slate-900"
+              className="text-slate-300 hover:text-brand-400"
             >
               {t.pages.contacto.email}
             </a>
           </div>
         </div>
-        <nav aria-label={f.shop} className="text-sm text-slate-600">
-          <p className="font-semibold text-slate-900">{f.shop}</p>
-          <ul className="mt-2 space-y-1.5">
+        <nav aria-label={f.shop} className="text-sm">
+          <p className="font-semibold text-white">{f.shop}</p>
+          <ul className="mt-3 space-y-2">
             {shopLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="hover:text-slate-900">
+                <Link href={link.href} className="text-slate-300 hover:text-brand-400">
                   {link.label}
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
-        <div className="text-sm text-slate-600">
+        <div className="text-sm">
           <nav aria-label={f.help}>
-            <p className="font-semibold text-slate-900">{f.help}</p>
-            <ul className="mt-2 space-y-1.5">
+            <p className="font-semibold text-white">{f.help}</p>
+            <ul className="mt-3 space-y-2">
               {helpLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="hover:text-slate-900">
+                  <Link href={link.href} className="text-slate-300 hover:text-brand-400">
                     {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
-          <nav aria-label={f.legal} className="mt-4">
-            <p className="font-semibold text-slate-900">{f.legal}</p>
-            <ul className="mt-2 space-y-1.5">
+          <nav aria-label={f.legal} className="mt-6">
+            <p className="font-semibold text-white">{f.legal}</p>
+            <ul className="mt-3 space-y-2">
               {legalLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="hover:text-slate-900">
+                  <Link href={link.href} className="text-slate-300 hover:text-brand-400">
                     {link.label}
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/admin"
+                  data-testid="footer-admin-link"
+                  className="text-slate-300 hover:text-brand-400"
+                >
+                  {f.admin}
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>
       </div>
-      <div className="border-t border-slate-100 py-4 text-center text-xs text-slate-400">
+      <div className="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
         © {new Date().getFullYear()} Theia
       </div>
     </footer>

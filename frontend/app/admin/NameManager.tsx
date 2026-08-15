@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { Dictionary } from "../lib/i18n";
 
 const inputClass =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none";
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none";
 
 type AdminStrings = Dictionary["admin"];
 
@@ -81,7 +81,7 @@ export default function NameManager({
         <button
           type="submit"
           data-testid={`${itemTestid}-create-submit`}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           {t.save}
         </button>
@@ -101,12 +101,12 @@ export default function NameManager({
                   name="name"
                   defaultValue={item.name}
                   data-testid={`${itemTestid}-name`}
-                  className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
+                  className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none"
                 />
                 <button
                   type="submit"
                   data-testid={`${itemTestid}-save`}
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
+                  className="text-sm font-medium text-slate-700 hover:text-brand-700"
                 >
                   {t.save}
                 </button>

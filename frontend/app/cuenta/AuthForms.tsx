@@ -5,7 +5,7 @@ import type { Dictionary } from "../lib/i18n";
 import { login, register, type AuthError } from "../lib/auth-actions";
 
 const inputClass =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none";
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none";
 
 const labelClass = "mb-1 block text-sm font-medium text-slate-700";
 
@@ -105,7 +105,7 @@ function AuthForm({
         type="submit"
         disabled={pending}
         data-testid={`${mode}-submit`}
-        className="w-full rounded-md bg-slate-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        className="w-full rounded-md bg-brand-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
       >
         {isLogin ? t.loginButton : t.registerButton}
       </button>

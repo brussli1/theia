@@ -42,13 +42,13 @@ export default async function QuoteConfirmationPage({
   if (!quote) {
     return (
       <main className="mx-auto max-w-2xl p-8">
-        <h1 className="text-2xl font-semibold text-slate-900">{t.quote.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.quote.title}</h1>
         <div className="mt-8 rounded-xl border border-slate-200 bg-white p-6 text-center">
           <p className="text-sm text-slate-500">{t.quote.notFound}</p>
           <p className="mt-1 text-sm text-slate-400">{t.quote.notFoundHint}</p>
           <Link
             href="/cotizacion"
-            className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="mt-4 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             {t.quote.newRequest}
           </Link>
@@ -81,7 +81,7 @@ export default async function QuoteConfirmationPage({
   return (
     <main className="mx-auto max-w-2xl p-8">
       <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h1 className="text-2xl font-semibold text-slate-900">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
           {t.quote.confirmationTitle}
         </h1>
         <p className="mt-2 text-sm text-slate-500">{t.quote.confirmationSubtitle}</p>
@@ -128,7 +128,7 @@ export default async function QuoteConfirmationPage({
           target="_blank"
           rel="noreferrer"
           data-testid="quote-whatsapp"
-          className="rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+          className="rounded-md bg-brand-600 px-4 py-2 text-white hover:bg-brand-700"
         >
           {t.quote.whatsApp}
         </a>

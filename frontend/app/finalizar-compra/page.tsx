@@ -36,12 +36,12 @@ export default async function CheckoutPage() {
   if (cart && cart.items.length === 0) {
     return (
       <main className="mx-auto max-w-6xl p-8">
-        <h1 className="text-2xl font-semibold text-slate-900">{t.checkout.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.checkout.title}</h1>
         <div className="mt-8">
           <p className="text-sm text-slate-500">{t.checkout.empty}</p>
           <Link
             href="/productos"
-            className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="mt-4 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             {t.cart.continueShopping}
           </Link>
@@ -54,7 +54,7 @@ export default async function CheckoutPage() {
 
   return (
     <main className="mx-auto max-w-6xl p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">{t.checkout.title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t.checkout.title}</h1>
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
         <CheckoutForm t={t.checkout} />
         <aside className="rounded-xl border border-slate-200 bg-white p-4">

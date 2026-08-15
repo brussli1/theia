@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import type { Dictionary } from "../lib/i18n";
 
 const inputClass =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none";
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none";
 
 const labelClass = "mb-1 block text-sm font-medium text-slate-700";
 
@@ -51,7 +51,7 @@ export default function TrackForm({ t }: { t: Dictionary["order"] }) {
       <button
         type="submit"
         data-testid="track-submit"
-        className="rounded-md bg-slate-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
+        className="rounded-md bg-brand-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
       >
         {t.trackButton}
       </button>
