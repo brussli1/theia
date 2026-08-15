@@ -1,13 +1,27 @@
+import type { Metadata } from "next";
 import { fetchProduct, fetchProducts } from "../lib/api";
 import { getDictionary, getLocale } from "../lib/i18n";
+import { pageMetadata } from "../lib/metadata";
 import QuoteForm, { type QuoteProduct } from "./QuoteForm";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const page = t.pages.quote;
+  return pageMetadata({
+    locale,
+    title: `${page.title} — Theia`,
+    description: page.description,
+    path: "/cotizacion",
+  });
+}
+
 export default async function CotizacionPage({
   searchParams,
 }: {
-  searchParams: { producto?: string };
+  searchParams: { producto?: string; tipo?: string };
 }) {
   const locale = getLocale();
   const t = getDictionary(locale);
@@ -36,6 +50,11 @@ export default async function CotizacionPage({
     }
   }
 
+  // Coming from the used-equipment or rental page (?tipo=used|rental):
+  // preselect that request kind.
+  const rawKind = searchParams?.tipo;
+  const initialKind = rawKind === "used" || rawKind === "rental" ? rawKind : null;
+
   return (
     <main className="mx-auto max-w-2xl p-8">
       <h1 className="text-2xl font-semibold text-slate-900">{t.quote.title}</h1>
@@ -44,6 +63,7 @@ export default async function CotizacionPage({
         t={t.quote}
         products={products}
         initialProductSlug={initialProductSlug}
+        initialKind={initialKind}
       />
     </main>
   );

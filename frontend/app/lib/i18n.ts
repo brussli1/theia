@@ -324,6 +324,226 @@ const es = {
     product: "Producto",
   },
   catalogError: "No se pudo cargar el catálogo.",
+  pages: {
+    footer: {
+      tagline:
+        "Equipos oftalmológicos para profesionales, en Paraguay y el exterior.",
+      shop: "Tienda",
+      products: "Productos",
+      quotes: "Cotización",
+      used: "Equipamiento usado",
+      rentals: "Alquileres",
+      help: "Ayuda",
+      support: "Soporte",
+      contact: "Contacto",
+      map: "Mapa",
+      legal: "Legal",
+      terms: "Términos de uso",
+      privacy: "Política de privacidad",
+    },
+    catalog: {
+      title: "Productos",
+      description:
+        "Catálogo de equipos oftalmológicos: auto-refractores, lámparas de hendidura, tonómetros y más.",
+    },
+    soporte: {
+      title: "Soporte técnico",
+      description:
+        "Instalación, mantenimiento y soporte técnico de equipos oftalmológicos, con repuestos originales.",
+      intro:
+        "En Theia acompañamos tu equipo después de la entrega: instalación, capacitación, mantenimiento y repuestos.",
+      sections: [
+        {
+          heading: "Instalación y puesta en marcha",
+          text: "Instalamos el equipo en tu consultorio, lo calibramos y capacitamos a tu equipo para el primer uso.",
+        },
+        {
+          heading: "Mantenimiento y calibración",
+          text: "Ofrecemos mantenimiento preventivo y correctivo, con calibración y verificación de rendimiento del equipo.",
+        },
+        {
+          heading: "Garantía y repuestos",
+          text: "Los equipos nuevos incluyen garantía. Trabajamos con repuestos y accesorios originales de fábrica.",
+        },
+        {
+          heading: "Cómo solicitar soporte",
+          text: "Escribinos por WhatsApp o email con el modelo del equipo y una descripción del problema: coordinamos la visita o la asistencia remota.",
+        },
+      ],
+      contactTitle: "Solicitar soporte",
+      contactText: "Escribinos por WhatsApp o email y contanos qué necesitás.",
+    },
+    contacto: {
+      title: "Contacto",
+      description:
+        "Contactate con Theia por WhatsApp o email. Consultas sobre equipos, usados, alquileres y soporte.",
+      intro:
+        "Escribinos por WhatsApp o email; respondemos las consultas en días hábiles.",
+      whatsapp: "WhatsApp",
+      email: "Email",
+      hours: "Horario de atención",
+      hoursValue: "Lunes a viernes, de 8:00 a 17:00",
+      otherTitle: "¿Buscás otra cosa?",
+      otherText:
+        "El equipamiento usado, los alquileres y el soporte técnico tienen su propia página.",
+    },
+    mapa: {
+      title: "Mapa y ubicación",
+      description:
+        "Theia opera desde Asunción, Paraguay, con entrega local e internacional. Coordinamos visitas y entregas por WhatsApp o email.",
+      intro:
+        "Atendemos desde Asunción, Paraguay, con entrega a todo el país y al exterior.",
+      note: "Compartimos la dirección exacta al coordinar la visita o la entrega. Escribinos por WhatsApp o email.",
+      mapTitle: "Mapa de Asunción, Paraguay",
+    },
+    tos: {
+      title: "Términos de uso",
+      description:
+        "Términos y condiciones del sitio de Theia: pedidos, pagos, cotizaciones, envíos y garantías.",
+      intro:
+        "Al usar este sitio aceptás estos términos. Si tenés dudas, escribinos por WhatsApp o email.",
+      sections: [
+        {
+          heading: "Sobre este sitio",
+          text: "Theia vende equipos oftalmológicos a profesionales y establecimientos de salud. Los precios se muestran en guaraníes o dólares según la ubicación del visitante.",
+        },
+        {
+          heading: "Pedidos y pagos",
+          text: "El pedido se confirma cuando se recibe el pago por el método elegido: PayPal, Western Union o tarjeta. Los pagos por Western Union se confirman manualmente.",
+        },
+        {
+          heading: "Cotizaciones",
+          text: "Las solicitudes de cotización no constituyen una compra. El precio final se confirma por escrito antes de confirmar el pedido.",
+        },
+        {
+          heading: "Envíos y entrega",
+          text: "Los tiempos de entrega se coordinan individualmente por WhatsApp o email después de confirmar el pago.",
+        },
+        {
+          heading: "Garantía y soporte",
+          text: "La garantía y el soporte técnico se detallan en la página de Soporte y en la documentación de cada equipo.",
+        },
+        {
+          heading: "Uso del sitio",
+          text: "El contenido de este sitio — textos, imágenes y especificaciones — es informativo y puede cambiar sin previo aviso.",
+        },
+        {
+          heading: "Legislación aplicable",
+          text: "Estos términos se rigen por las leyes de la República del Paraguay.",
+        },
+      ],
+    },
+    privacidad: {
+      title: "Política de privacidad",
+      description:
+        "Cómo Theia recopila, usa y protege tus datos personales al comprar o solicitar cotizaciones.",
+      intro:
+        "Respetamos tu privacidad. Esta política explica qué datos recopilamos y para qué los usamos.",
+      sections: [
+        {
+          heading: "Datos que recopilamos",
+          text: "Nombre, email, teléfono y datos de envío al realizar un pedido o solicitar una cotización, y los datos de la cuenta si te registrás.",
+        },
+        {
+          heading: "Uso de los datos",
+          text: "Usamos tus datos para procesar pedidos y cotizaciones, coordinar entregas y responderte por WhatsApp o email.",
+        },
+        {
+          heading: "Compartir datos",
+          text: "No vendemos ni compartimos tus datos con terceros, salvo lo necesario para procesar pagos y entregas.",
+        },
+        {
+          heading: "Cookies",
+          text: "Usamos cookies para recordar tu idioma, tu carrito y tu sesión.",
+        },
+        {
+          heading: "Conservación",
+          text: "Conservamos los datos de pedidos y cotizaciones mientras sea necesario para cumplir con obligaciones legales y comerciales.",
+        },
+        {
+          heading: "Tus derechos",
+          text: "Podés pedir acceso, corrección o eliminación de tus datos escribiéndonos por WhatsApp o email.",
+        },
+      ],
+      contactTitle: "Consultas de privacidad",
+      contactText: "Escribinos a td.phakos@gmail.com con cualquier pregunta sobre esta política.",
+    },
+    usados: {
+      title: "Equipamiento usado",
+      description:
+        "Equipos oftalmológicos usados, revisados por nuestro servicio técnico. Consultanos por disponibilidad y precio.",
+      intro:
+        "¿Buscás equipamiento usado en buen estado? Trabajamos con equipos revisados y puestos a punto por nuestro servicio técnico, a precios más accesibles.",
+      bullets: [
+        "Revisión y puesta a punto antes de la entrega",
+        "Garantía según el equipo",
+        "Disponibilidad limitada: cada equipo se ofrece a pedido",
+      ],
+      processTitle: "Cómo funciona",
+      processSteps: [
+        "Escribinos qué equipo buscás y tu presupuesto aproximado.",
+        "Te confirmamos disponibilidad, estado y precio.",
+        "Coordinamos la entrega y la garantía.",
+      ],
+      ctaTitle: "¿Buscás un equipo usado?",
+      ctaText: "Contanos qué necesitás y te avisamos cuando haya disponibilidad.",
+      ctaButton: "Solicitar cotización",
+    },
+    alquiler: {
+      title: "Alquiler de equipos",
+      description:
+        "Alquilá equipos oftalmológicos por días, semanas o meses, con instalación y mantenimiento incluidos.",
+      intro:
+        "¿Necesitás un equipo por un tiempo determinado? Ofrecemos alquiler de equipos oftalmológicos para clínicas, congresos y campañas de salud.",
+      bullets: [
+        "Períodos flexibles: días, semanas o meses",
+        "Instalación y mantenimiento incluidos",
+        "Ideal para congresos, eventos y campañas",
+      ],
+      processTitle: "Cómo funciona",
+      processSteps: [
+        "Contanos qué equipo necesitás y por cuánto tiempo.",
+        "Te confirmamos disponibilidad y tarifa.",
+        "Entregamos el equipo instalado y configurado.",
+      ],
+      ctaTitle: "¿Necesitás un equipo por tiempo limitado?",
+      ctaText: "Solicitá una cotización de alquiler sin compromiso.",
+      ctaButton: "Solicitar cotización",
+    },
+    trackOrder: {
+      title: "Rastrear pedido",
+      description:
+        "Seguí el estado de tu pedido con el número de pedido y el email de la compra.",
+    },
+    orderDetail: {
+      title: "Estado del pedido",
+      description: "Estado y detalles de tu pedido en Theia.",
+    },
+    cart: {
+      title: "Carrito",
+      description:
+        "Tu carrito de compras en Theia: revisá los productos seleccionados antes de finalizar la compra.",
+    },
+    checkout: {
+      title: "Finalizar compra",
+      description:
+        "Completá tus datos y elegí el método de pago para finalizar tu pedido en Theia.",
+    },
+    quote: {
+      title: "Solicitar cotización",
+      description:
+        "Solicitá una cotización de productos, equipamiento usado o alquiler de equipos oftalmológicos.",
+    },
+    quoteDetail: {
+      title: "Estado de la cotización",
+      description: "Estado de tu solicitud de cotización en Theia.",
+    },
+    account: {
+      title: "Mi cuenta",
+      description:
+        "Ingresá o creá una cuenta en Theia para ver tu historial de pedidos y cotizaciones.",
+    },
+  },
 };
 
 const en: typeof es = {
@@ -642,6 +862,224 @@ const en: typeof es = {
     product: "Product",
   },
   catalogError: "The catalog could not be loaded.",
+  pages: {
+    footer: {
+      tagline:
+        "Ophthalmological equipment for professionals, in Paraguay and abroad.",
+      shop: "Shop",
+      products: "Products",
+      quotes: "Quote",
+      used: "Used equipment",
+      rentals: "Rentals",
+      help: "Help",
+      support: "Support",
+      contact: "Contact",
+      map: "Map",
+      legal: "Legal",
+      terms: "Terms of use",
+      privacy: "Privacy policy",
+    },
+    catalog: {
+      title: "Products",
+      description:
+        "Catalog of ophthalmological equipment: auto-refractors, slit lamps, tonometers and more.",
+    },
+    soporte: {
+      title: "Technical support",
+      description:
+        "Installation, maintenance and technical support for ophthalmological equipment, with genuine spare parts.",
+      intro:
+        "At Theia we stand by your equipment after delivery: installation, training, maintenance and spare parts.",
+      sections: [
+        {
+          heading: "Installation and commissioning",
+          text: "We install the equipment in your practice, calibrate it and train your team for first use.",
+        },
+        {
+          heading: "Maintenance and calibration",
+          text: "We offer preventive and corrective maintenance, with calibration and performance checks.",
+        },
+        {
+          heading: "Warranty and spare parts",
+          text: "New equipment includes a warranty. We work with genuine factory spare parts and accessories.",
+        },
+        {
+          heading: "How to request support",
+          text: "Write to us on WhatsApp or email with the equipment model and a description of the issue: we'll arrange an on-site visit or remote assistance.",
+        },
+      ],
+      contactTitle: "Request support",
+      contactText: "Write to us on WhatsApp or email and tell us what you need.",
+    },
+    contacto: {
+      title: "Contact",
+      description:
+        "Get in touch with Theia on WhatsApp or email. Questions about equipment, used units, rentals and support.",
+      intro: "Write to us on WhatsApp or email; we answer questions on business days.",
+      whatsapp: "WhatsApp",
+      email: "Email",
+      hours: "Opening hours",
+      hoursValue: "Monday to Friday, 8:00–17:00",
+      otherTitle: "Looking for something else?",
+      otherText:
+        "Used equipment, rentals and technical support each have their own page.",
+    },
+    mapa: {
+      title: "Map and location",
+      description:
+        "Theia operates from Asunción, Paraguay, with local and international delivery. We arrange visits and deliveries by WhatsApp or email.",
+      intro:
+        "We operate from Asunción, Paraguay, with delivery across the country and abroad.",
+      note: "We share the exact address when arranging your visit or delivery. Write to us on WhatsApp or email.",
+      mapTitle: "Map of Asunción, Paraguay",
+    },
+    tos: {
+      title: "Terms of use",
+      description:
+        "Terms and conditions for the Theia website: orders, payments, quotes, shipping and warranties.",
+      intro:
+        "By using this site you accept these terms. If you have questions, write to us on WhatsApp or email.",
+      sections: [
+        {
+          heading: "About this site",
+          text: "Theia sells ophthalmological equipment to professionals and healthcare institutions. Prices are shown in guaraníes or dollars depending on the visitor's location.",
+        },
+        {
+          heading: "Orders and payments",
+          text: "An order is confirmed once payment is received through the chosen method: PayPal, Western Union or card. Western Union payments are confirmed manually.",
+        },
+        {
+          heading: "Quotes",
+          text: "Quote requests do not constitute a purchase. The final price is confirmed in writing before the order is confirmed.",
+        },
+        {
+          heading: "Shipping and delivery",
+          text: "Delivery times are arranged individually by WhatsApp or email once payment is confirmed.",
+        },
+        {
+          heading: "Warranty and support",
+          text: "Warranty and technical support are detailed on the Support page and in each equipment's documentation.",
+        },
+        {
+          heading: "Site use",
+          text: "The content of this site — texts, images and specifications — is informational and may change without notice.",
+        },
+        {
+          heading: "Applicable law",
+          text: "These terms are governed by the laws of the Republic of Paraguay.",
+        },
+      ],
+    },
+    privacidad: {
+      title: "Privacy policy",
+      description:
+        "How Theia collects, uses and protects your personal data when you place an order or request quotes.",
+      intro:
+        "We respect your privacy. This policy explains what data we collect and how we use it.",
+      sections: [
+        {
+          heading: "Data we collect",
+          text: "Name, email, phone and shipping details when placing an order or requesting a quote, plus account data if you register.",        },
+        {
+          heading: "How we use data",
+          text: "We use your data to process orders and quotes, arrange deliveries and answer you on WhatsApp or email.",
+        },
+        {
+          heading: "Sharing data",
+          text: "We do not sell or share your data with third parties, except as needed to process payments and deliveries.",
+        },
+        {
+          heading: "Cookies",
+          text: "We use cookies to remember your language, your cart and your session.",
+        },
+        {
+          heading: "Retention",
+          text: "We keep order and quote data as long as needed to comply with legal and commercial obligations.",
+        },
+        {
+          heading: "Your rights",
+          text: "You can request access, correction or deletion of your data by writing to us on WhatsApp or email.",
+        },
+      ],
+      contactTitle: "Privacy questions",
+      contactText: "Email td.phakos@gmail.com with any question about this policy.",
+    },
+    usados: {
+      title: "Used equipment",
+      description:
+        "Used ophthalmological equipment, inspected by our technical service. Ask us about availability and pricing.",
+      intro:
+        "Looking for used equipment in good condition? We work with units inspected and serviced by our technical team, at more accessible prices.",
+      bullets: [
+        "Inspection and servicing before delivery",
+        "Warranty depending on the unit",
+        "Limited availability: each unit is offered on request",
+      ],
+      processTitle: "How it works",
+      processSteps: [
+        "Tell us which equipment you're looking for and your approximate budget.",
+        "We confirm availability, condition and price.",
+        "We arrange delivery and warranty.",
+      ],
+      ctaTitle: "Looking for a used unit?",
+      ctaText: "Tell us what you need and we'll let you know when one is available.",
+      ctaButton: "Request a quote",
+    },
+    alquiler: {
+      title: "Equipment rental",
+      description:
+        "Rent ophthalmological equipment by the day, week or month, with installation and maintenance included.",
+      intro:
+        "Need a piece of equipment for a limited time? We rent ophthalmological equipment to clinics, for congresses and health campaigns.",
+      bullets: [
+        "Flexible periods: days, weeks or months",
+        "Installation and maintenance included",
+        "Ideal for congresses, events and campaigns",
+      ],
+      processTitle: "How it works",
+      processSteps: [
+        "Tell us which equipment you need and for how long.",
+        "We confirm availability and rates.",
+        "We deliver the equipment installed and configured.",
+      ],
+      ctaTitle: "Need equipment for a limited time?",
+      ctaText: "Request a rental quote with no commitment.",
+      ctaButton: "Request a quote",
+    },
+    trackOrder: {
+      title: "Track order",
+      description:
+        "Follow the status of your order with the order number and the email used at checkout.",
+    },
+    orderDetail: {
+      title: "Order status",
+      description: "Status and details of your Theia order.",
+    },
+    cart: {
+      title: "Cart",
+      description:
+        "Your Theia shopping cart: review your selected products before checking out.",
+    },
+    checkout: {
+      title: "Checkout",
+      description:
+        "Enter your details and choose a payment method to complete your Theia order.",
+    },
+    quote: {
+      title: "Request a quote",
+      description:
+        "Request a quote for products, used equipment or ophthalmological equipment rental.",
+    },
+    quoteDetail: {
+      title: "Quote status",
+      description: "Status of your quote request at Theia.",
+    },
+    account: {
+      title: "My account",
+      description:
+        "Log in or create a Theia account to see your order and quote history.",
+    },
+  },
 };
 
 export type Dictionary = typeof es;

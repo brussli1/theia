@@ -24,16 +24,17 @@ test.describe("visitor currency", () => {
 
 test.describe("locale switcher", () => {
   test("toggles the storefront between Spanish and English", async ({ page }) => {
+    const headerNav = page.getByRole("banner").getByRole("navigation");
     await page.goto("/productos");
-    await expect(page.getByRole("link", { name: "Productos" })).toBeVisible();
-    await expect(page).toHaveTitle(/Equipos oftalmológicos/);
+    await expect(headerNav.getByRole("link", { name: "Productos" })).toBeVisible();
+    await expect(page).toHaveTitle(/Productos — Theia/);
 
     await switchTo("English", "en");
-    await expect(page.getByRole("link", { name: "Products" })).toBeVisible();
-    await expect(page).toHaveTitle(/Ophthalmological equipment/);
+    await expect(headerNav.getByRole("link", { name: "Products" })).toBeVisible();
+    await expect(page).toHaveTitle(/Products — Theia/);
 
     await switchTo("Español", "es");
-    await expect(page.getByRole("link", { name: "Productos" })).toBeVisible();
+    await expect(headerNav.getByRole("link", { name: "Productos" })).toBeVisible();
 
     async function switchTo(label: string, lang: "es" | "en") {
       await expect

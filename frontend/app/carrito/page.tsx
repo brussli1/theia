@@ -1,10 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { fetchCart, fetchVisitorCurrency, type Cart } from "../lib/api";
 import { asPriceLine, formatAmount, totalIn, type Currency } from "../lib/currency";
 import { getDictionary, getLocale } from "../lib/i18n";
+import { pageMetadata } from "../lib/metadata";
 import CartControls from "./CartControls";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const page = t.pages.cart;
+  return pageMetadata({
+    locale,
+    title: `${page.title} — Theia`,
+    description: page.description,
+    path: "/carrito",
+    noIndex: true,
+  });
+}
 
 export default async function CarritoPage() {
   const locale = getLocale();

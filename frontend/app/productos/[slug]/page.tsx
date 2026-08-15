@@ -1,12 +1,41 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchProduct, fetchVisitorCurrency, formatBrandCategory } from "../../lib/api";
 import { formatPrice } from "../../lib/currency";
 import { getDictionary, getLocale } from "../../lib/i18n";
+import { pageMetadata } from "../../lib/metadata";
 import AddToCartButton from "./AddToCartButton";
 import Gallery from "./Gallery";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  try {
+    const product = await fetchProduct(params.slug);
+    return pageMetadata({
+      locale,
+      title: `${product.name} — Theia`,
+      description: product.description,
+      path: `/productos/${product.slug}`,
+      images: product.images,
+    });
+  } catch {
+    const page = t.pages.catalog;
+    return pageMetadata({
+      locale,
+      title: `${page.title} — Theia`,
+      description: page.description,
+      path: "/productos",
+    });
+  }
+}
 
 export default async function ProductoPage({
   params,

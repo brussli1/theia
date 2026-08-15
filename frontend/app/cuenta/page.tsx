@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import AuthForms from "./AuthForms";
 import {
@@ -15,8 +16,22 @@ import { asPriceLine, formatAmount, totalIn } from "../lib/currency";
 import { getDictionary, getLocale, type Locale } from "../lib/i18n";
 import { orderStatusKey, quoteKindKey, quoteStatusKey } from "../lib/labels";
 import { logout } from "../lib/auth-actions";
+import { pageMetadata } from "../lib/metadata";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const page = t.pages.account;
+  return pageMetadata({
+    locale,
+    title: `${page.title} — Theia`,
+    description: page.description,
+    path: "/cuenta",
+    noIndex: true,
+  });
+}
 
 function formatDate(iso: string, locale: Locale): string {
   return new Date(iso).toLocaleDateString(locale === "es" ? "es-PY" : "en-US", {

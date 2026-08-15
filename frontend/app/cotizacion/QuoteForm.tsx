@@ -19,14 +19,16 @@ export default function QuoteForm({
   t,
   products,
   initialProductSlug,
+  initialKind,
 }: {
   t: Dictionary["quote"];
   products: QuoteProduct[];
   initialProductSlug?: string | null;
+  initialKind?: "used" | "rental" | null;
 }) {
   const [error, setError] = useState<QuoteError | null>(null);
   const [pending, setPending] = useState(false);
-  const [kind, setKind] = useState<string>(KIND_PRODUCT);
+  const [kind, setKind] = useState<string>(initialKind ?? KIND_PRODUCT);
   const isProduct = kind === KIND_PRODUCT;
 
   async function submit(formData: FormData) {
@@ -58,7 +60,7 @@ export default function QuoteForm({
               type="radio"
               name="kind"
               value="product"
-              defaultChecked
+              defaultChecked={kind === "product"}
               onChange={() => setKind("product")}
               data-testid="quote-kind-product"
               className="accent-slate-900"
@@ -70,6 +72,7 @@ export default function QuoteForm({
               type="radio"
               name="kind"
               value="used"
+              defaultChecked={kind === "used"}
               onChange={() => setKind("used")}
               data-testid="quote-kind-used"
               className="accent-slate-900"
@@ -81,6 +84,7 @@ export default function QuoteForm({
               type="radio"
               name="kind"
               value="rental"
+              defaultChecked={kind === "rental"}
               onChange={() => setKind("rental")}
               data-testid="quote-kind-rental"
               className="accent-slate-900"

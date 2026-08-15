@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { getDictionary, getLocale } from "./lib/i18n";
+import { pageMetadata, SITE_URL } from "./lib/metadata";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -16,10 +18,17 @@ const geistMono = localFont({
 });
 
 export function generateMetadata(): Metadata {
-  const t = getDictionary(getLocale());
-  return {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const site = pageMetadata({
+    locale,
     title: t.meta.title,
     description: t.meta.description,
+    path: "/",
+  });
+  return {
+    ...site,
+    metadataBase: new URL(SITE_URL),
   };
 }
 
@@ -36,6 +45,7 @@ export default function RootLayout({
       >
         <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );

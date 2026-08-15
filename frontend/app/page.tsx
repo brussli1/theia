@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Carousel from "./components/Carousel";
 import ProductGrid from "./components/ProductGrid";
 import {
@@ -9,8 +10,20 @@ import {
   type ProductPage,
 } from "./lib/api";
 import { getDictionary, getLocale } from "./lib/i18n";
+import { pageMetadata } from "./lib/metadata";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  return pageMetadata({
+    locale,
+    title: t.meta.title,
+    description: t.meta.description,
+    path: "/",
+  });
+}
 
 function HomeSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (

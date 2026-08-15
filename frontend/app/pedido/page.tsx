@@ -1,5 +1,19 @@
+import type { Metadata } from "next";
 import { getDictionary, getLocale } from "../lib/i18n";
+import { pageMetadata } from "../lib/metadata";
 import TrackForm from "./TrackForm";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const page = t.pages.trackOrder;
+  return pageMetadata({
+    locale,
+    title: `${page.title} — Theia`,
+    description: page.description,
+    path: "/pedido",
+  });
+}
 
 export default async function TrackOrderPage() {
   const locale = getLocale();

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   confirmPayment,
@@ -11,8 +12,22 @@ import { CONTACT_EMAIL, WHATSAPP_URL } from "../../lib/contact";
 import { asPriceLine, formatAmount, formatPrice, totalIn } from "../../lib/currency";
 import { getDictionary, getLocale } from "../../lib/i18n";
 import { orderStatusKey } from "../../lib/labels";
+import { pageMetadata } from "../../lib/metadata";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const page = t.pages.orderDetail;
+  return pageMetadata({
+    locale,
+    title: `${page.title} — Theia`,
+    description: page.description,
+    path: "/pedido",
+    noIndex: true,
+  });
+}
 
 const PAYMENT_METHOD_KEYS = {
   paypal: "paymentPaypal",

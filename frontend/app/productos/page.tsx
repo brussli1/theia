@@ -1,10 +1,24 @@
+import type { Metadata } from "next";
 import ProductGrid from "../components/ProductGrid";
 import Pagination from "../components/Pagination";
 import { fetchProducts, fetchVisitorCurrency } from "../lib/api";
 import { getDictionary, getLocale } from "../lib/i18n";
+import { pageMetadata } from "../lib/metadata";
 import ProductFilters from "./ProductFilters";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const page = t.pages.catalog;
+  return pageMetadata({
+    locale,
+    title: `${page.title} — Theia`,
+    description: page.description,
+    path: "/productos",
+  });
+}
 
 export default async function ProductosPage({
   searchParams,

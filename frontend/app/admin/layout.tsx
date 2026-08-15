@@ -1,9 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import AuthForms from "../cuenta/AuthForms";
 import { fetchCurrentUser, type User } from "../lib/api";
 import { getDictionary, getLocale } from "../lib/i18n";
+import { pageMetadata } from "../lib/metadata";
 
 export const dynamic = "force-dynamic";
+
+/** The admin panel is never indexed (#17); this metadata applies to every
+ *  admin route. */
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  return pageMetadata({
+    locale,
+    title: `${t.admin.dashboardTitle} — Theia`,
+    description: t.admin.dashboardSubtitle,
+    path: "/admin",
+    noIndex: true,
+  });
+}
 
 /** The panel gate (#15): signed-out visitors get the login form, customers an
  * access-denied message, admins the panel with its section nav. Renders once

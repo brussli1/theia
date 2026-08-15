@@ -1,10 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { fetchQuote, type Quote } from "../../lib/api";
 import { CONTACT_EMAIL, WHATSAPP_URL } from "../../lib/contact";
 import { getDictionary, getLocale } from "../../lib/i18n";
 import { quoteKindKey, quoteStatusKey } from "../../lib/labels";
+import { pageMetadata } from "../../lib/metadata";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+  const page = t.pages.quoteDetail;
+  return pageMetadata({
+    locale,
+    title: `${page.title} — Theia`,
+    description: page.description,
+    path: "/cotizacion",
+    noIndex: true,
+  });
+}
 
 export default async function QuoteConfirmationPage({
   params,
