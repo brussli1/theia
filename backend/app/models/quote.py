@@ -27,9 +27,13 @@ QUOTE_KIND_USED = "used"
 QUOTE_KIND_RENTAL = "rental"
 QUOTE_KINDS = frozenset({QUOTE_KIND_PRODUCT, QUOTE_KIND_USED, QUOTE_KIND_RENTAL})
 
-# Quote status: every new request starts `new`; responding and closing are
-# admin territory (#16).
+# Quote status: every new request starts `new`; the admin marks it
+# `responded` once the customer has been answered, and `closed` once the
+# conversation is over (#16).
 QUOTE_STATUS_NEW = "new"
+QUOTE_STATUS_RESPONDED = "responded"
+QUOTE_STATUS_CLOSED = "closed"
+QUOTE_STATUSES = frozenset({QUOTE_STATUS_NEW, QUOTE_STATUS_RESPONDED, QUOTE_STATUS_CLOSED})
 
 _QUOTE_REFERENCE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 

@@ -70,11 +70,11 @@ A User with the admin role — the only identity that may use the admin panel (`
 _Avoid_: operator, staff, moderator
 
 **Order**:
-A buyer's completed purchase of orderable Products.
+A buyer's completed purchase of orderable Products. Its status runs `awaiting_payment` → `paid` (gateway confirmation, or an admin confirming a manual transfer) → `shipped` → `delivered`; `received` is a legacy pre-payment status.
 _Avoid_: purchase, transaction, sale
 
 **Payment**:
-The record of how a buyer pays for an Order — method (PayPal, Western Union, or card), status (pending / paid), and amount — charged in guaraníes by default, gateway-backed behind a provider adapter.
+The record of how a buyer pays for an Order — method (PayPal, Western Union, or card), status (pending / paid), and amount — charged in guaraníes by default, gateway-backed behind a provider adapter. Western Union is confirmed manually, by an admin marking the Order `paid`.
 _Avoid_: charge, transaction, settlement
 
 **Quote**:
@@ -82,5 +82,5 @@ A buyer's request for pricing or availability — for a quote-only Product, Used
 _Avoid_: enquiry, contact, RFQ
 
 **QuoteRequest**:
-The stored record of a Quote — contact details, kind (`product` | `used` | `rental`), an optional message, the quoted Product's snapshot, and a status (starts `new`).
+The stored record of a Quote — contact details, kind (`product` | `used` | `rental`), an optional message, the quoted Product's snapshot, and a status (`new` → `responded` → `closed`, moved by an admin).
 _Avoid_: lead, inquiry, ticket

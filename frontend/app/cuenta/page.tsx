@@ -13,7 +13,7 @@ import {
 } from "../lib/api";
 import { asPriceLine, formatAmount, totalIn } from "../lib/currency";
 import { getDictionary, getLocale, type Locale } from "../lib/i18n";
-import { orderStatusKey, quoteKindKey } from "../lib/labels";
+import { orderStatusKey, quoteKindKey, quoteStatusKey } from "../lib/labels";
 import { logout } from "../lib/auth-actions";
 
 export const dynamic = "force-dynamic";
@@ -151,6 +151,7 @@ export default async function CuentaPage() {
           <ul className="mt-4 space-y-3">
             {quotes.map((quote) => {
               const kindKey = quoteKindKey(quote.kind);
+              const statusKey = quoteStatusKey(quote.status);
               return (
                 <li
                   key={quote.reference}
@@ -170,7 +171,7 @@ export default async function CuentaPage() {
                   <span className="text-slate-600">{kindKey ? t.quote[kindKey] : quote.kind}</span>
                   {quote.product_name && <span className="text-slate-500">{quote.product_name}</span>}
                   <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                    {t.quote.statusNew}
+                    {statusKey ? t.quote[statusKey] : quote.status}
                   </span>
                 </li>
               );

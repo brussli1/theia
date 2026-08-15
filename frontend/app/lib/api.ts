@@ -152,10 +152,14 @@ export type OrderItem = {
 };
 
 /** Order statuses (#12): new orders wait for their payment, then move to
- * `paid` once the gateway confirms it. `received` is the legacy status of
- * orders created before payments existed. */
+ * `paid` once the payment is confirmed — by the gateway, or by an admin for
+ * Western Union (#16). Fulfilment (admin) then moves them through `shipped`
+ * and `delivered`. `received` is the legacy status of orders created before
+ * payments existed. */
 export const ORDER_STATUS_AWAITING_PAYMENT = "awaiting_payment";
 export const ORDER_STATUS_PAID = "paid";
+export const ORDER_STATUS_SHIPPED = "shipped";
+export const ORDER_STATUS_DELIVERED = "delivered";
 export const ORDER_STATUS_RECEIVED = "received";
 
 export type Order = {
@@ -229,6 +233,13 @@ export async function fetchCollections(): Promise<Collection[]> {
 export const QUOTE_KIND_PRODUCT = "product";
 export const QUOTE_KIND_USED = "used";
 export const QUOTE_KIND_RENTAL = "rental";
+
+/** Quote statuses (#13/#16): every request starts `new`; an admin marks it
+ * `responded` once the customer has been answered and `closed` when the
+ * conversation is over. */
+export const QUOTE_STATUS_NEW = "new";
+export const QUOTE_STATUS_RESPONDED = "responded";
+export const QUOTE_STATUS_CLOSED = "closed";
 
 export type Quote = {
   reference: string;
@@ -350,6 +361,19 @@ export type AdminCollection = {
   product_ids: number[];
 };
 
+/** The admin's view of an order (#16): everything the storefront shows plus
+ * the row id and the payment's own status (pending until confirmed — the
+ * Western Union gap #12 left open for admin handling). */
+export type AdminOrder = Order & {
+  id: number;
+  payment_status: string | null;
+};
+
+/** The admin's view of a quote request (#16): the storefront shape plus id. */
+export type AdminQuote = Quote & {
+  id: number;
+};
+
 async function adminFetch<T>(path: string): Promise<T> {
   const response = await fetch(`${BACKEND_URL}${path}`, {
     cache: "no-store",
@@ -379,4 +403,12 @@ export async function fetchAdminBrands(): Promise<AdminBrand[]> {
 
 export async function fetchAdminCollections(): Promise<AdminCollection[]> {
   return adminFetch<AdminCollection[]>("/api/admin/collections");
+}
+
+export async function fetchAdminOrders(): Promise<AdminOrder[]> {
+  return adminFetch<AdminOrder[]>("/api/admin/orders");
+}
+
+export async function fetchAdminQuotes(): Promise<AdminQuote[]> {
+  return adminFetch<AdminQuote[]>("/api/admin/quotes");
 }

@@ -1,4 +1,4 @@
-"""Admin panel — catalog management (ticket #15).
+"""Admin panel — catalog, orders and quotes (tickets #15, #16).
 
 Everything here is account-only: every endpoint depends on `get_current_admin`
 (401 without a session, 403 for a signed-in customer). Registration never
@@ -7,7 +7,9 @@ The panel manages the catalog tables the storefront reads: products (create /
 edit / deactivate — there is no hard delete, orders and collections reference
 products), categories and brands (full CRUD, products fall back to
 uncategorized/unbranded via SET NULL), the curated homepage collections, and
-product image uploads to the backend's `/media` mount.
+product image uploads to the backend's `/media` mount. Order and quote
+requests are read and their status moved along: setting an order `paid` also
+confirms its pending payment — the manual path for Western Union transfers.
 """
 
 import re
@@ -21,6 +23,8 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth import get_current_admin
+from app.api.orders import order_out
+from app.api.quotes import quote_out
 from app.api.schemas import (
     AdminBrandIn,
     AdminBrandOut,
@@ -28,13 +32,25 @@ from app.api.schemas import (
     AdminCategoryOut,
     AdminCollectionIn,
     AdminCollectionOut,
+    AdminOrderOut,
+    AdminOrderStatusIn,
     AdminProductIn,
     AdminProductOut,
+    AdminQuoteOut,
+    AdminQuoteStatusIn,
 )
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.catalog import Brand, Category, Product
 from app.models.collections import Collection, CollectionProduct
+from app.models.order import (
+    ORDER_STATUS_PAID,
+    PAYMENT_METHOD_WESTERN_UNION,
+    PAYMENT_STATUS_PAID,
+    Order,
+    Payment,
+)
+from app.models.quote import QuoteRequest
 
 router = APIRouter(
     prefix="/api/admin", tags=["admin"], dependencies=[Depends(get_current_admin)]
@@ -360,3 +376,97 @@ async def upload_image(file: UploadFile = File(...)) -> dict:
     filename = f"{uuid4().hex}{extension}"
     (media_dir / filename).write_bytes(data)
     return {"url": f"{settings.media_url.rstrip('/')}/media/{filename}"}
+
+
+# --- Orders ---
+
+
+async def admin_order_out(db: AsyncSession, order: Order) -> AdminOrderOut:
+    """The storefront's order serialization plus the row id and the payment's
+    own status (pending until confirmed — admin marking is #16)."""
+    base = await order_out(db, order)
+    payment = (
+        (
+            await db.execute(
+                select(Payment).where(Payment.order_id == order.id).limit(1)
+            )
+        ).scalars()
+    ).first()
+    return AdminOrderOut(
+        **base.model_dump(), id=order.id, payment_status=payment.status if payment else None
+    )
+
+
+@router.get("/orders", response_model=list[AdminOrderOut])
+async def list_orders(db: AsyncSession = Depends(get_db)) -> list[AdminOrderOut]:
+    orders = (
+        (
+            await db.execute(
+                select(Order).order_by(Order.created_at.desc(), Order.id.desc())
+            )
+        ).scalars()
+    ).all()
+    return [await admin_order_out(db, order) for order in orders]
+
+
+@router.patch("/orders/{order_id}", response_model=AdminOrderOut)
+async def set_order_status(
+    order_id: int, payload: AdminOrderStatusIn, db: AsyncSession = Depends(get_db)
+) -> AdminOrderOut:
+    order = await db.get(Order, order_id)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    order.status = payload.status
+    # Marking an order paid confirms its payment — but only for the manual
+    # Western Union transfer: the gateway-backed methods are confirmed by
+    # POST /api/payments/confirm, never by hand (docs/adr/0001-payments.md).
+    if payload.status == ORDER_STATUS_PAID:
+        payment = (
+            (
+                await db.execute(
+                    select(Payment)
+                    .where(Payment.order_id == order.id)
+                    .order_by(Payment.id)
+                    .limit(1)
+                )
+            ).scalars()
+        ).first()
+        if (
+            payment is not None
+            and payment.method == PAYMENT_METHOD_WESTERN_UNION
+            and payment.status != PAYMENT_STATUS_PAID
+        ):
+            payment.status = PAYMENT_STATUS_PAID
+    await db.commit()
+    return await admin_order_out(db, order)
+
+
+# --- Quotes ---
+
+
+@router.get("/quotes", response_model=list[AdminQuoteOut])
+async def list_quotes(db: AsyncSession = Depends(get_db)) -> list[AdminQuoteOut]:
+    quotes = (
+        (
+            await db.execute(
+                select(QuoteRequest).order_by(
+                    QuoteRequest.created_at.desc(), QuoteRequest.id.desc()
+                )
+            )
+        ).scalars()
+    ).all()
+    return [
+        AdminQuoteOut(**quote_out(quote).model_dump(), id=quote.id) for quote in quotes
+    ]
+
+
+@router.patch("/quotes/{quote_id}", response_model=AdminQuoteOut)
+async def set_quote_status(
+    quote_id: int, payload: AdminQuoteStatusIn, db: AsyncSession = Depends(get_db)
+) -> AdminQuoteOut:
+    quote = await db.get(QuoteRequest, quote_id)
+    if quote is None:
+        raise HTTPException(status_code=404, detail="Quote request not found")
+    quote.status = payload.status
+    await db.commit()
+    return AdminQuoteOut(**quote_out(quote).model_dump(), id=quote.id)

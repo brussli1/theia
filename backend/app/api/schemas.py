@@ -258,3 +258,29 @@ class AdminCollectionIn(BaseModel):
 
 class AdminCollectionOut(AdminCollectionIn):
     type: Literal["carousel", "popular", "promo"]
+
+
+class AdminOrderStatusIn(BaseModel):
+    """An order's new status, chosen by an admin (#16). `received` is a
+    legacy pre-payment status and is not a target an admin can set."""
+
+    status: Literal["awaiting_payment", "paid", "shipped", "delivered"]
+
+
+class AdminOrderOut(OrderOut):
+    """The admin's view of an order: everything the storefront shows plus the
+    row id and the payment's own status (pending until confirmed — the
+    Western Union gap #12 left open for admin handling)."""
+
+    id: int
+    payment_status: str | None
+
+
+class AdminQuoteStatusIn(BaseModel):
+    """A quote request's new status, chosen by an admin (#16)."""
+
+    status: Literal["new", "responded", "closed"]
+
+
+class AdminQuoteOut(QuoteOut):
+    id: int

@@ -22,12 +22,24 @@ if TYPE_CHECKING:
     from app.models.user import User
 
 # Order status: every new order starts `awaiting_payment` and moves to `paid`
-# when the gateway confirms the payment. Fulfilment (admin) adds `shipped`,
-# `delivered`, ... `received` is a legacy status kept for orders created
-# before payments existed, when payment was arranged by hand.
+# when the payment is confirmed — by the gateway for PayPal/card, by an admin
+# for the manual Western Union transfer (#16). Fulfilment (admin) then moves
+# it through `shipped` and `delivered`. `received` is a legacy status kept for
+# orders created before payments existed, when payment was arranged by hand.
 ORDER_STATUS_AWAITING_PAYMENT = "awaiting_payment"
 ORDER_STATUS_PAID = "paid"
+ORDER_STATUS_SHIPPED = "shipped"
+ORDER_STATUS_DELIVERED = "delivered"
 ORDER_STATUS_RECEIVED = "received"
+ORDER_STATUSES = frozenset(
+    {
+        ORDER_STATUS_AWAITING_PAYMENT,
+        ORDER_STATUS_PAID,
+        ORDER_STATUS_SHIPPED,
+        ORDER_STATUS_DELIVERED,
+        ORDER_STATUS_RECEIVED,
+    }
+)
 
 # Payment methods offered at checkout.
 PAYMENT_METHOD_PAYPAL = "paypal"

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { fetchQuote, type Quote } from "../../lib/api";
 import { CONTACT_EMAIL, WHATSAPP_URL } from "../../lib/contact";
 import { getDictionary, getLocale } from "../../lib/i18n";
-import { quoteKindKey } from "../../lib/labels";
+import { quoteKindKey, quoteStatusKey } from "../../lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +44,8 @@ export default async function QuoteConfirmationPage({
 
   const kindKey = quoteKindKey(quote.kind);
   const kindLabel = kindKey ? t.quote[kindKey] : quote.kind;
+  const statusKey = quoteStatusKey(quote.status);
+  const statusLabel = statusKey ? t.quote[statusKey] : quote.status;
   const mailSubject = encodeURIComponent(
     `Solicitud de cotización ${quote.reference}`,
   );
@@ -81,7 +83,7 @@ export default async function QuoteConfirmationPage({
               data-testid="quote-status"
               className="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700"
             >
-              {t.quote.statusNew}
+              {statusLabel}
             </span>
           </p>
         </div>

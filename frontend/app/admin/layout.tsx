@@ -56,6 +56,8 @@ export default async function AdminLayout({
     { href: "/admin/categorias", label: t.admin.categories, testid: "admin-nav-categories" },
     { href: "/admin/marcas", label: t.admin.brands, testid: "admin-nav-brands" },
     { href: "/admin/colecciones", label: t.admin.collections, testid: "admin-nav-collections" },
+    { href: "/admin/pedidos", label: t.admin.orders, testid: "admin-nav-orders" },
+    { href: "/admin/cotizaciones", label: t.admin.quotes, testid: "admin-nav-quotes" },
   ];
 
   return (

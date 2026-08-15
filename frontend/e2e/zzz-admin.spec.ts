@@ -184,3 +184,74 @@ test("admin can upload a product image", async ({ page }) => {
   await page.getByRole("link", { name }).first().click();
   await expect(page.locator("img[src*='/media/']").first()).toBeVisible();
 });
+
+test("admin can manage orders and quotes", async ({ page }) => {
+  const suffix = Date.now();
+  const orderEmail = `pedido-${suffix}@ejemplo.com`;
+  const quoteEmail = `cotizacion-${suffix}@ejemplo.com`;
+
+  // Fixtures through the storefront: a Western Union order and a
+  // used-equipment quote request.
+  await page.goto("/productos/high-performance-digital-imaging-system-vk-2s");
+  await page.getByTestId("add-to-cart").click();
+  await expect(page.getByTestId("cart-badge")).toHaveText("1");
+  await page.goto("/carrito");
+  await page.getByTestId("go-to-checkout").click();
+  await page.getByTestId("checkout-email").fill(orderEmail);
+  await page.getByTestId("checkout-phone").fill("+595 981 000 000");
+  await page.getByTestId("checkout-name").fill("Juan Pérez");
+  await page.getByTestId("checkout-address").fill("Av. Mariscal López 1234");
+  await page.getByTestId("checkout-city").fill("Asunción");
+  await page.getByTestId("checkout-country").fill("Paraguay");
+  await page.getByTestId("place-order").click();
+  await expect(page).toHaveURL(/\/pedido\/TH-[A-Z2-9]{8}/);
+  const orderNumber = (await page.getByTestId("order-number").textContent())?.trim();
+  expect(orderNumber).toMatch(/^TH-[A-Z2-9]{8}$/);
+
+  await page.goto("/cotizacion");
+  await page.getByTestId("quote-kind-used").check();
+  await page.getByTestId("quote-name").fill(`María ${suffix}`);
+  await page.getByTestId("quote-email").fill(quoteEmail);
+  await page.getByTestId("quote-phone").fill("+595 981 654 321");
+  await page.getByTestId("quote-message").fill("¿Tienen un tonómetro usado?");
+  await page.getByTestId("quote-submit").click();
+  await expect(page).toHaveURL(/\/cotizacion\/QT-[A-Z2-9]{8}/);
+  const quoteReference = (await page.getByTestId("quote-reference").textContent())?.trim();
+  expect(quoteReference).toMatch(/^QT-[A-Z2-9]{8}$/);
+
+  // The order is listed with its status and can be moved along; marking it
+  // paid also confirms the pending Western Union payment.
+  await adminLogin(page);
+  await page.getByTestId("admin-nav-orders").click();
+  const orderRow = page.getByTestId("admin-order-row").filter({ hasText: orderNumber });
+  await expect(orderRow).toBeVisible();
+  await expect(orderRow.getByTestId("admin-order-payment-badge")).toHaveText("Pago pendiente");
+  await orderRow.getByTestId("admin-order-status").selectOption("shipped");
+  await orderRow.getByTestId("admin-order-status-save").click();
+  await expect(orderRow.getByTestId("admin-order-status-badge")).toHaveText("Enviado");
+  await expect(orderRow.getByTestId("admin-order-payment-badge")).toHaveText("Pago pendiente");
+  await orderRow.getByTestId("admin-order-status").selectOption("paid");
+  await orderRow.getByTestId("admin-order-status-save").click();
+  await expect(orderRow.getByTestId("admin-order-status-badge")).toHaveText("Pagado");
+  await expect(orderRow.getByTestId("admin-order-payment-badge")).toHaveText("Pago confirmado");
+
+  // The customer's tracking page reflects the admin's changes.
+  await page.goto(`/pedido/${orderNumber}?email=${encodeURIComponent(orderEmail)}`);
+  await expect(page.getByTestId("order-status")).toHaveText("Pagado");
+
+  // The quote is listed with the customer's details and can be marked responded.
+  await page.goto("/admin/cotizaciones");
+  const quoteRow = page
+    .getByTestId("admin-quote-row")
+    .filter({ hasText: quoteReference });
+  await expect(quoteRow).toBeVisible();
+  await expect(quoteRow).toContainText("¿Tienen un tonómetro usado?");
+  await expect(quoteRow.getByTestId("admin-quote-status-badge")).toHaveText("Nueva");
+  await quoteRow.getByTestId("admin-quote-status").selectOption("responded");
+  await quoteRow.getByTestId("admin-quote-status-save").click();
+  await expect(quoteRow.getByTestId("admin-quote-status-badge")).toHaveText("Respondida");
+
+  // The customer's quote page reflects the response.
+  await page.goto(`/cotizacion/${quoteReference}?email=${encodeURIComponent(quoteEmail)}`);
+  await expect(page.getByTestId("quote-status")).toHaveText("Respondida");
+});

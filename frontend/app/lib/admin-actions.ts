@@ -200,3 +200,40 @@ export async function saveCollection(
   }
   revalidatePath("/", "layout");
 }
+
+/** Moves an order's status along; marking it `paid` also confirms its pending
+ * payment — the manual path for Western Union transfers (#16). */
+export async function setOrderStatus(
+  orderId: number,
+  formData: FormData,
+): Promise<void> {
+  const status = (formData.get("status") as string | null) ?? "";
+  const response = await adminRequest(`/api/admin/orders/${orderId}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  bounceIfUnauthenticated(response);
+  if (!response.ok) {
+    throw new Error(`Order status update failed: ${response.status}`);
+  }
+  revalidatePath("/", "layout");
+}
+
+/** Marks a quote request responded or closed (#16). */
+export async function setQuoteStatus(
+  quoteId: number,
+  formData: FormData,
+): Promise<void> {
+  const status = (formData.get("status") as string | null) ?? "";
+  const response = await adminRequest(`/api/admin/quotes/${quoteId}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  bounceIfUnauthenticated(response);
+  if (!response.ok) {
+    throw new Error(`Quote status update failed: ${response.status}`);
+  }
+  revalidatePath("/", "layout");
+}
