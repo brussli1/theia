@@ -1,5 +1,5 @@
-import Link from "next/link";
-import ProductCardView from "../components/ProductCard";
+import ProductGrid from "../components/ProductGrid";
+import Pagination from "../components/Pagination";
 import { fetchProducts } from "../lib/api";
 import ProductFilters from "./ProductFilters";
 
@@ -30,7 +30,6 @@ export default async function ProductosPage({
   }
 
   const current = new URLSearchParams(params);
-  const pageNumber = page.page;
   const buildPageUrl = (target: number) => {
     const next = new URLSearchParams(current);
     next.set("page", String(target));
@@ -48,35 +47,8 @@ export default async function ProductosPage({
           currentQuery={current.toString()}
         />
       </div>
-      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {page.items.map((product) => (
-          <ProductCardView key={product.slug} product={product} />
-        ))}
-      </div>
-      {page.total === 0 && (
-        <p className="mt-8 text-sm text-slate-500">No se encontraron productos.</p>
-      )}
-      {page.pages > 1 && (
-        <nav className="mt-8 flex items-center justify-center gap-4 text-sm">
-          {pageNumber > 1 ? (
-            <Link href={buildPageUrl(pageNumber - 1)} className="text-slate-700 hover:underline">
-              ← Anterior
-            </Link>
-          ) : (
-            <span className="text-slate-300">← Anterior</span>
-          )}
-          <span className="text-slate-500">
-            Página {pageNumber} de {page.pages}
-          </span>
-          {pageNumber < page.pages ? (
-            <Link href={buildPageUrl(pageNumber + 1)} className="text-slate-700 hover:underline">
-              Siguiente →
-            </Link>
-          ) : (
-            <span className="text-slate-300">Siguiente →</span>
-          )}
-        </nav>
-      )}
+      <ProductGrid products={page.items} />
+      <Pagination page={page.page} pages={page.pages} buildPageUrl={buildPageUrl} />
     </main>
   );
 }

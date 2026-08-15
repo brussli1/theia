@@ -86,6 +86,22 @@ export async function fetchCurrency(): Promise<Currency> {
   }
 }
 
+export async function fetchCategories(): Promise<Facet[]> {
+  const response = await fetch(`${BACKEND_URL}/api/categories`, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Categories request failed: ${response.status}`);
+  }
+  return (await response.json()) as Facet[];
+}
+
+export async function fetchBrands(): Promise<Facet[]> {
+  const response = await fetch(`${BACKEND_URL}/api/brands`, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Brands request failed: ${response.status}`);
+  }
+  return (await response.json()) as Facet[];
+}
+
 export function formatGs(priceGs: number): string {
   return `Gs ${priceGs.toLocaleString("es-PY")}`;
 }
