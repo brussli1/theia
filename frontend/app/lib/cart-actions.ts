@@ -2,9 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
-const CART_COOKIE = "cart_id";
+import { BACKEND_URL, CART_COOKIE } from "./backend";
 
 const CART_COOKIE_OPTIONS = {
   httpOnly: true,

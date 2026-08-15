@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -81,3 +82,43 @@ class UpdateItemIn(BaseModel):
 class CollectionOut(BaseModel):
     type: Literal["carousel", "popular", "promo"]
     products: list[ProductCard]
+
+
+class CheckoutIn(BaseModel):
+    email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=254)
+    phone: str = Field(min_length=1, max_length=40)
+    delivery_type: Literal["local", "international"]
+    name: str = Field(min_length=1, max_length=200)
+    address: str = Field(min_length=1, max_length=300)
+    city: str = Field(min_length=1, max_length=120)
+    region: str | None = Field(default=None, max_length=120)
+    postal_code: str | None = Field(default=None, max_length=30)
+    country: str = Field(min_length=1, max_length=120)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class OrderItemOut(BaseModel):
+    product_name: str
+    image: str | None
+    price_gs: int
+    price_usd: str
+    quantity: int
+
+
+class OrderOut(BaseModel):
+    order_number: str
+    status: str
+    email: str
+    phone: str
+    delivery_type: Literal["local", "international"]
+    name: str
+    address: str
+    city: str
+    region: str | None
+    postal_code: str | None
+    country: str
+    notes: str | None
+    subtotal_gs: int
+    subtotal_usd: str
+    items: list[OrderItemOut]
+    created_at: datetime

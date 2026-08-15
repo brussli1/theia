@@ -5,6 +5,7 @@ from app.api.catalog import router as catalog_router
 from app.api.collections import router as collections_router
 from app.api.geo import router as geo_router
 from app.api.health import router as health_router
+from app.api.orders import router as orders_router
 from app.api.products import router as products_router
 from app.core.config import settings
 
@@ -15,4 +16,5 @@ app.include_router(products_router)
 app.include_router(catalog_router)
 app.include_router(geo_router)
 app.include_router(cart_router)
+app.include_router(orders_router)
 app.include_router(collections_router)

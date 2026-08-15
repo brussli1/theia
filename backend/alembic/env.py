@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import settings
 from app.core.database import Base
-from app.models import cart, catalog, collections  # noqa: F401  (registers models on Base.metadata)
+from app.models import cart, catalog, collections, order  # noqa: F401  (registers models on Base.metadata)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url_sync)

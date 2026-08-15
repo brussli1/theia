@@ -9,6 +9,15 @@ export type PriceLine = {
   quantity: number;
 };
 
+/** Any API shape carrying both prices and a quantity (cart/order items) as a PriceLine. */
+export function asPriceLine(line: {
+  price_gs: number;
+  price_usd: string;
+  quantity: number;
+}): PriceLine {
+  return { priceGs: line.price_gs, priceUsd: line.price_usd, quantity: line.quantity };
+}
+
 const PYG_LOCALE = "es-PY";
 
 function numberFormat(currency: Currency, locale: Locale): Intl.NumberFormat {

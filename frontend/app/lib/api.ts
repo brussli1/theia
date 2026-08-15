@@ -142,6 +142,49 @@ export async function fetchBrands(): Promise<Facet[]> {
   return (await response.json()) as Facet[];
 }
 
+export type OrderItem = {
+  product_name: string;
+  image: string | null;
+  price_gs: number;
+  price_usd: string;
+  quantity: number;
+};
+
+/** The only status reachable today; Payments (#12) and fulfilment extend it. */
+export const ORDER_STATUS_RECEIVED = "received";
+
+export type Order = {
+  order_number: string;
+  status: string;
+  email: string;
+  phone: string;
+  delivery_type: "local" | "international";
+  name: string;
+  address: string;
+  city: string;
+  region: string | null;
+  postal_code: string | null;
+  country: string;
+  notes: string | null;
+  subtotal_gs: number;
+  subtotal_usd: string;
+  items: OrderItem[];
+  created_at: string;
+};
+
+/** Order lookup for the confirmation/tracking page. Server-only. */
+export async function fetchOrder(orderNumber: string, email: string): Promise<Order> {
+  const params = new URLSearchParams({ email });
+  const response = await fetch(
+    `${BACKEND_URL}/api/orders/${encodeURIComponent(orderNumber)}?${params.toString()}`,
+    { cache: "no-store" },
+  );
+  if (!response.ok) {
+    throw new Error(`Order request failed: ${response.status}`);
+  }
+  return (await response.json()) as Order;
+}
+
 export type Collection = {
   type: string;
   products: ProductCard[];

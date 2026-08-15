@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { fetchCart, fetchVisitorCurrency, type Cart } from "../lib/api";
-import { formatAmount, totalIn, type Currency, type PriceLine } from "../lib/currency";
+import { asPriceLine, formatAmount, totalIn, type Currency } from "../lib/currency";
 import { getDictionary, getLocale } from "../lib/i18n";
 import CartControls from "./CartControls";
 
@@ -18,11 +18,7 @@ export default async function CarritoPage() {
     currency = "USD";
   }
 
-  const line = (item: Cart["items"][number]): PriceLine => ({
-    priceGs: item.price_gs,
-    priceUsd: item.price_usd,
-    quantity: item.quantity,
-  });
+  const line = asPriceLine;
 
   return (
     <main className="mx-auto max-w-6xl p-8">
@@ -70,6 +66,18 @@ export default async function CarritoPage() {
             <span className="text-xl font-semibold text-slate-900" data-testid="cart-subtotal">
               {formatAmount(totalIn(cart.items.map(line), currency), currency, locale)}
             </span>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
+            <Link href="/pedido" className="text-sm text-slate-500 hover:text-slate-900">
+              {t.cart.trackOrder}
+            </Link>
+            <Link
+              href="/finalizar-compra"
+              data-testid="go-to-checkout"
+              className="rounded-md bg-slate-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              {t.cart.checkout}
+            </Link>
           </div>
         </div>
       )}
