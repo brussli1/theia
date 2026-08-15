@@ -8,6 +8,7 @@ from app.api.health import router as health_router
 from app.api.orders import router as orders_router
 from app.api.payments import router as payments_router
 from app.api.products import router as products_router
+from app.api.quotes import router as quotes_router
 from app.core.config import settings
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
@@ -20,3 +21,4 @@ app.include_router(cart_router)
 app.include_router(orders_router)
 app.include_router(payments_router)
 app.include_router(collections_router)
+app.include_router(quotes_router)

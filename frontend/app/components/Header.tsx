@@ -30,6 +30,9 @@ export default async function Header() {
           <Link href="/productos" className="hover:text-slate-900">
             {t.header.products}
           </Link>
+          <Link href="/cotizacion" className="hover:text-slate-900">
+            {t.header.quotes}
+          </Link>
           {categories.map((category) => (
             <Link
               key={category.slug}

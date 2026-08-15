@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchProduct, fetchVisitorCurrency, formatBrandCategory } from "../../lib/api";
 import { formatPrice } from "../../lib/currency";
@@ -55,12 +56,13 @@ export default async function ProductoPage({
           {product.orderable ? (
             <AddToCartButton slug={product.slug} t={t.product} />
           ) : (
-            <button
-              type="button"
-              className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-900 hover:bg-slate-100"
+            <Link
+              href={`/cotizacion?producto=${product.slug}`}
+              data-testid="request-quote"
+              className="inline-block rounded-md bg-slate-900 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-slate-700"
             >
               {t.product.requestQuote}
-            </button>
+            </Link>
           )}
           <div className="mt-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">

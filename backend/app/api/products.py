@@ -35,6 +35,7 @@ async def list_products(
     price_min: int | None = Query(None, ge=0),
     price_max: int | None = Query(None, ge=0),
     sort: str = Query("newest"),
+    orderable: bool | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> ProductPage:
     if certification is not None and certification.upper() not in CERTIFICATIONS:
@@ -56,6 +57,8 @@ async def list_products(
         statement = statement.where(Brand.slug == brand)
     if certification:
         statement = statement.where(Product.certifications.any(certification.upper()))
+    if orderable is not None:
+        statement = statement.where(Product.orderable == orderable)
     if price_min is not None:
         statement = statement.where(Product.price_gs >= price_min)
     if price_max is not None:

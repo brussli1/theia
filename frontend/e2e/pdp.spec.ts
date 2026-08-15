@@ -17,12 +17,12 @@ test("PDP renders gallery, specs, badges, and visitor-currency price", async ({ 
 test("orderable product shows add-to-cart, not quote", async ({ page }) => {
   await page.goto("/productos/high-performance-digital-imaging-system-vk-2s");
   await expect(page.getByRole("button", { name: "Agregar al carrito" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Solicitar cotización" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Solicitar cotización" })).toHaveCount(0);
 });
 
 test("quote-only product shows quote action, not add-to-cart", async ({ page }) => {
   await page.goto("/productos/hhou-7040-refraction-units");
-  await expect(page.getByRole("button", { name: "Solicitar cotización" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Solicitar cotización" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Agregar al carrito" })).toHaveCount(0);
 });
 
@@ -32,7 +32,7 @@ test("unavailable product is clearly marked; actions follow orderability", async
   await page.goto("/productos/auto-refractor-huvitz-hrk-1");
   await expect(page.getByText("Producto no disponible")).toBeVisible();
   await expect(page.getByRole("button", { name: "Agregar al carrito" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Solicitar cotización" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Solicitar cotización" })).toHaveCount(0);
 });
 
 test("listing card links to the PDP", async ({ page }) => {

@@ -23,6 +23,22 @@ class Settings(BaseSettings):
     paypal_client_id: str = ""
     paypal_client_secret: str = ""
 
+    # Quote notifications (#13): a channel is enabled by its credentials
+    # being present — SMTP when `smtp_host` is set, WhatsApp when both
+    # `whatsapp_token` and `whatsapp_phone_id` are set. With nothing
+    # configured (dev/test/CI) the composed message is logged instead, and
+    # the confirmation page offers wa.me/mailto links as the fallback path.
+    # See docs/adr/0002-quotes.md.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+    notification_email_to: str = "td.phakos@gmail.com"
+    whatsapp_token: str = ""
+    whatsapp_phone_id: str = ""
+    notification_whatsapp_to: str = "595971282908"
+
     @property
     def debug(self) -> bool:
         return self.environment == "development"

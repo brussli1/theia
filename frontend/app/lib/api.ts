@@ -224,6 +224,36 @@ export async function fetchCollections(): Promise<Collection[]> {
   return (await response.json()) as Collection[];
 }
 
+/** Quote request kinds (#13): the PRD's three contact paths share one flow. */
+export const QUOTE_KIND_PRODUCT = "product";
+export const QUOTE_KIND_USED = "used";
+export const QUOTE_KIND_RENTAL = "rental";
+
+export type Quote = {
+  reference: string;
+  kind: string;
+  product_name: string | null;
+  name: string;
+  email: string;
+  phone: string;
+  message: string | null;
+  status: string;
+  created_at: string;
+};
+
+/** Quote lookup for the confirmation page, mirroring order lookup. Server-only. */
+export async function fetchQuote(reference: string, email: string): Promise<Quote> {
+  const params = new URLSearchParams({ email });
+  const response = await fetch(
+    `${BACKEND_URL}/api/quotes/${encodeURIComponent(reference)}?${params.toString()}`,
+    { cache: "no-store" },
+  );
+  if (!response.ok) {
+    throw new Error(`Quote request failed: ${response.status}`);
+  }
+  return (await response.json()) as Quote;
+}
+
 export function formatBrandCategory(brand: string | null, category: string | null): string {
   return [brand, category].filter(Boolean).join(" · ");
 }

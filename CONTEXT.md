@@ -72,3 +72,7 @@ _Avoid_: charge, transaction, settlement
 **Quote**:
 A buyer's request for pricing or availability — for a quote-only Product, Used equipment, or a Rental.
 _Avoid_: enquiry, contact, RFQ
+
+**QuoteRequest**:
+The stored record of a Quote — contact details, kind (`product` | `used` | `rental`), an optional message, the quoted Product's snapshot, and a status (starts `new`).
+_Avoid_: lead, inquiry, ticket

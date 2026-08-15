@@ -3,6 +3,9 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+# Customer contact email, used by checkout and quote requests alike.
+EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
 
 class ProductCard(BaseModel):
     id: int
@@ -85,7 +88,7 @@ class CollectionOut(BaseModel):
 
 
 class CheckoutIn(BaseModel):
-    email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=254)
+    email: str = Field(pattern=EMAIL_PATTERN, max_length=254)
     phone: str = Field(min_length=1, max_length=40)
     delivery_type: Literal["local", "international"]
     payment_method: Literal["paypal", "western_union", "card"]
@@ -137,3 +140,24 @@ class CheckoutOut(OrderOut):
 class ConfirmIn(BaseModel):
     order_number: str = Field(min_length=1, max_length=20)
     payment_ref: str = Field(min_length=1, max_length=120)
+
+
+class QuoteIn(BaseModel):
+    kind: Literal["product", "used", "rental"]
+    name: str = Field(min_length=1, max_length=200)
+    email: str = Field(pattern=EMAIL_PATTERN, max_length=254)
+    phone: str = Field(min_length=1, max_length=40)
+    message: str | None = Field(default=None, max_length=2000)
+    product_slug: str | None = Field(default=None, max_length=300)
+
+
+class QuoteOut(BaseModel):
+    reference: str
+    kind: str
+    product_name: str | None
+    name: str
+    email: str
+    phone: str
+    message: str | None
+    status: str
+    created_at: datetime
