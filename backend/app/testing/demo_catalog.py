@@ -92,3 +92,10 @@ PRODUCTS = [
         datetime(2024, 4, 10, tzinfo=timezone.utc),
     ),
 ]
+
+# (type, [(product_id, position), ...]) — admin-curated, ordered lists
+COLLECTIONS = [
+    ("carousel", [(1, 1), (2, 2)]),
+    ("popular", [(1, 1), (4, 2)]),
+    ("promo", [(2, 1)]),
+]

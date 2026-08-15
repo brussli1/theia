@@ -142,6 +142,21 @@ export async function fetchBrands(): Promise<Facet[]> {
   return (await response.json()) as Facet[];
 }
 
+export type Collection = {
+  type: string;
+  products: ProductCard[];
+};
+
+export const COLLECTION_TYPES = ["carousel", "popular", "promo"] as const;
+
+export async function fetchCollections(): Promise<Collection[]> {
+  const response = await fetch(`${BACKEND_URL}/api/collections`, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Collections request failed: ${response.status}`);
+  }
+  return (await response.json()) as Collection[];
+}
+
 export function formatBrandCategory(brand: string | null, category: string | null): string {
   return [brand, category].filter(Boolean).join(" · ");
 }

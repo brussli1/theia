@@ -59,10 +59,11 @@ const es = {
     image: "Imagen",
   },
   home: {
-    subtitle: "Plataforma de venta de equipos oftalmológicos",
-    viewProducts: "Ver productos",
-    backend: "Backend",
-    database: "Base de datos",
+    loNuevo: "Lo Nuevo",
+    popular: "Popular",
+    promotions: "Promociones",
+    previous: "Anterior",
+    next: "Siguiente",
   },
   cart: {
     title: "Carrito",
@@ -127,10 +128,11 @@ const en: typeof es = {
     image: "Image",
   },
   home: {
-    subtitle: "Storefront platform for ophthalmological equipment",
-    viewProducts: "View products",
-    backend: "Backend",
-    database: "Database",
+    loNuevo: "New arrivals",
+    popular: "Popular",
+    promotions: "Promotions",
+    previous: "Previous",
+    next: "Next",
   },
   cart: {
     title: "Cart",

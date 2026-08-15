@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cards import product_card
 from app.api.schemas import Facet, ProductCard, ProductDetail, ProductPage
 from app.core.database import get_db
 from app.models.catalog import Brand, Category, Product
@@ -73,19 +74,7 @@ async def list_products(
     ).all()
 
     items = [
-        ProductCard(
-            id=product.id,
-            slug=product.slug,
-            name=product.name,
-            price_gs=product.price_gs,
-            price_usd=f"{product.price_usd:.2f}",
-            image=product.images[0] if product.images else None,
-            available=product.available,
-            orderable=product.orderable,
-            certifications=product.certifications,
-            brand=brand_name,
-            category=category_name,
-        )
+        product_card(product, brand_name, category_name)
         for product, brand_name, category_name in rows
     ]
     pages = (total + page_size - 1) // page_size if total else 0

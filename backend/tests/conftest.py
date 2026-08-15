@@ -16,7 +16,7 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.testing.demo_catalog import BRANDS, CATEGORIES, PRODUCTS
+from app.testing.demo_catalog import BRANDS, CATEGORIES, COLLECTIONS, PRODUCTS
 
 SYNC_TEST_URL = os.environ["DATABASE_URL_SYNC"]
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,7 +50,7 @@ def clean_tables(database):
         conn.autocommit = True
         with conn.cursor() as cursor:
             cursor.execute(
-                "TRUNCATE cart_items, carts, products, brands, categories RESTART IDENTITY CASCADE"
+                "TRUNCATE collection_products, collections, cart_items, carts, products, brands, categories RESTART IDENTITY CASCADE"
             )
     yield
 
@@ -90,6 +90,18 @@ def seed_products():
                 """,
                 [_adapt(row) for row in PRODUCTS],
             )
+            for ctype, links in COLLECTIONS:
+                cursor.execute(
+                    "INSERT INTO collections (type) VALUES (%s) RETURNING id",
+                    (ctype,),
+                )
+                collection_id = cursor.fetchone()[0]
+                for product_id, position in links:
+                    cursor.execute(
+                        "INSERT INTO collection_products (collection_id, product_id, position) "
+                        "VALUES (%s, %s, %s)",
+                        (collection_id, product_id, position),
+                    )
         conn.commit()
 
 

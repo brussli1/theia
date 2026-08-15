@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -74,3 +76,8 @@ class AddItemIn(BaseModel):
 
 class UpdateItemIn(BaseModel):
     quantity: int = Field(ge=1)
+
+
+class CollectionOut(BaseModel):
+    type: Literal["carousel", "popular", "promo"]
+    products: list[ProductCard]
