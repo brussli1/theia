@@ -8,6 +8,8 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://theia:theia@localhost:5432/theia_test
     services:
       postgres:
         image: postgres:16-alpine
