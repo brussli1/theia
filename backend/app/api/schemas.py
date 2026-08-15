@@ -47,6 +47,10 @@ class Facet(BaseModel):
     name: str
 
 
+class CategoryFacet(Facet):
+    parent_id: int | None = None
+
+
 class ProductPage(BaseModel):
     items: list[ProductCard]
     page: int
