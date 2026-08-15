@@ -40,7 +40,6 @@ router = APIRouter(
     prefix="/api/admin", tags=["admin"], dependencies=[Depends(get_current_admin)]
 )
 
-COLLECTION_TYPES: tuple[str, ...] = ("carousel", "popular", "promo")
 ALLOWED_IMAGE_TYPES = {
     "image/jpeg": ".jpg",
     "image/png": ".png",
