@@ -88,6 +88,7 @@ class CheckoutIn(BaseModel):
     email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=254)
     phone: str = Field(min_length=1, max_length=40)
     delivery_type: Literal["local", "international"]
+    payment_method: Literal["paypal", "western_union", "card"]
     name: str = Field(min_length=1, max_length=200)
     address: str = Field(min_length=1, max_length=300)
     city: str = Field(min_length=1, max_length=120)
@@ -108,6 +109,8 @@ class OrderItemOut(BaseModel):
 class OrderOut(BaseModel):
     order_number: str
     status: str
+    payment_method: str | None
+    payment_currency: str | None
     email: str
     phone: str
     delivery_type: Literal["local", "international"]
@@ -122,3 +125,15 @@ class OrderOut(BaseModel):
     subtotal_usd: str
     items: list[OrderItemOut]
     created_at: datetime
+
+
+class CheckoutOut(OrderOut):
+    """The checkout response: the new order plus, for gateway methods, the URL
+    the customer's browser must be sent to in order to pay."""
+
+    payment_redirect_url: str | None = None
+
+
+class ConfirmIn(BaseModel):
+    order_number: str = Field(min_length=1, max_length=20)
+    payment_ref: str = Field(min_length=1, max_length=120)

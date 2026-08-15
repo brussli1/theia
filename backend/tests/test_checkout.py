@@ -11,6 +11,7 @@ CHECKOUT_PAYLOAD = {
     "email": "customer@example.com",
     "phone": "+595 981 123 456",
     "delivery_type": "local",
+    "payment_method": "western_union",
     "name": "Juan Pérez",
     "address": "Av. Mariscal López 1234",
     "city": "Asunción",
@@ -39,7 +40,7 @@ def test_checkout_converts_cart_into_order(seeded):
     assert response.status_code == 201
     body = response.json()
     assert re.fullmatch(r"TH-[A-Z2-9]{8}", body["order_number"])
-    assert body["status"] == "received"
+    assert body["status"] == "awaiting_payment"
     assert body["email"] == "customer@example.com"
     assert body["phone"] == "+595 981 123 456"
     assert body["delivery_type"] == "local"
@@ -139,7 +140,7 @@ def test_order_lookup_by_number_and_email(seeded):
     assert response.status_code == 200
     body = response.json()
     assert body["order_number"] == order["order_number"]
-    assert body["status"] == "received"
+    assert body["status"] == "awaiting_payment"
     assert body["items"][0]["product_name"] == "High Performance Digital Imaging System VK-2s"
     assert body["subtotal_gs"] == 1000000
 

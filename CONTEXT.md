@@ -65,6 +65,10 @@ _Avoid_: basket, bag
 A buyer's completed purchase of orderable Products.
 _Avoid_: purchase, transaction, sale
 
+**Payment**:
+The record of how a buyer pays for an Order — method (PayPal, Western Union, or card), status (pending / paid), and amount — charged in guaraníes by default, gateway-backed behind a provider adapter.
+_Avoid_: charge, transaction, settlement
+
 **Quote**:
 A buyer's request for pricing or availability — for a quote-only Product, Used equipment, or a Rental.
 _Avoid_: enquiry, contact, RFQ

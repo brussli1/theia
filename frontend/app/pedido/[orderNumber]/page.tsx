@@ -1,22 +1,32 @@
 import Link from "next/link";
 import {
+  confirmPayment,
   fetchOrder,
   fetchVisitorCurrency,
+  ORDER_STATUS_AWAITING_PAYMENT,
+  ORDER_STATUS_PAID,
   ORDER_STATUS_RECEIVED,
   type Currency,
   type Order,
 } from "../../lib/api";
+import { CONTACT_EMAIL, WHATSAPP_URL } from "../../lib/contact";
 import { asPriceLine, formatAmount, formatPrice, totalIn } from "../../lib/currency";
 import { getDictionary, getLocale } from "../../lib/i18n";
 
 export const dynamic = "force-dynamic";
+
+const PAYMENT_METHOD_KEYS = {
+  paypal: "paymentPaypal",
+  western_union: "paymentWesternUnion",
+  card: "paymentCard",
+} as const;
 
 export default async function PedidoPage({
   params,
   searchParams,
 }: {
   params: { orderNumber: string };
-  searchParams: { email?: string };
+  searchParams: { email?: string; payment_ref?: string };
 }) {
   const locale = getLocale();
   const t = getDictionary(locale);
@@ -24,8 +34,15 @@ export default async function PedidoPage({
   let currency: Currency = "USD";
   try {
     if (searchParams?.email) {
+      // Coming back from a gateway payment page: confirm the payment first so
+      // the page shows the fresh status. If the gateway is unreachable, fall
+      // back to a plain lookup so the page still renders (as awaiting payment).
       [order, currency] = await Promise.all([
-        fetchOrder(params.orderNumber, searchParams.email),
+        searchParams.payment_ref
+          ? confirmPayment(params.orderNumber, searchParams.payment_ref).catch(() =>
+              fetchOrder(params.orderNumber, searchParams.email ?? ""),
+            )
+          : fetchOrder(params.orderNumber, searchParams.email),
         fetchVisitorCurrency(),
       ]);
     }
@@ -52,7 +69,23 @@ export default async function PedidoPage({
   }
 
   const statusLabel =
-    order.status === ORDER_STATUS_RECEIVED ? t.order.statusReceived : order.status;
+    order.status === ORDER_STATUS_RECEIVED
+      ? t.order.statusReceived
+      : order.status === ORDER_STATUS_AWAITING_PAYMENT
+        ? t.order.statusAwaitingPayment
+        : order.status === ORDER_STATUS_PAID
+          ? t.order.statusPaid
+          : order.status;
+
+  const statusBadge =
+    order.status === ORDER_STATUS_AWAITING_PAYMENT
+      ? "bg-amber-100 text-amber-800"
+      : "bg-emerald-100 text-emerald-800";
+
+  const paymentMethodKey =
+    order.payment_method && order.payment_method in PAYMENT_METHOD_KEYS
+      ? PAYMENT_METHOD_KEYS[order.payment_method as keyof typeof PAYMENT_METHOD_KEYS]
+      : null;
 
   return (
     <main className="mx-auto max-w-6xl p-8">
@@ -70,13 +103,66 @@ export default async function PedidoPage({
             <span className="text-slate-500">{t.order.status}: </span>
             <span
               data-testid="order-status"
-              className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800"
+              className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statusBadge}`}
             >
               {statusLabel}
             </span>
           </p>
         </div>
       </div>
+
+      {order.payment_method && (
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="text-sm font-semibold text-slate-900">{t.order.payment}</h2>
+          <div className="mt-2 flex flex-wrap gap-6 text-sm">
+            <p data-testid="payment-method">
+              <span className="text-slate-500">{t.order.payment}: </span>
+              <span className="font-medium text-slate-900">
+                {paymentMethodKey ? t.order[paymentMethodKey] : order.payment_method}
+              </span>
+            </p>
+            <p>
+              <span className="text-slate-500">{t.order.paymentAmount}: </span>
+              <span className="font-medium text-slate-900" data-testid="payment-amount">
+                {formatAmount(
+                  order.payment_currency === "USD"
+                    ? Number(order.subtotal_usd)
+                    : order.subtotal_gs,
+                  order.payment_currency === "USD" ? "USD" : "PYG",
+                  locale,
+                )}
+              </span>
+            </p>
+          </div>
+
+          {order.payment_method === "western_union" && (
+            <div className="mt-4 rounded-md bg-slate-50 p-4" data-testid="wu-instructions">
+              <h3 className="text-sm font-semibold text-slate-900">{t.order.wuTitle}</h3>
+              <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-600">
+                {t.order.wuSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+              <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
+                >
+                  {t.order.wuWhatsApp}
+                </a>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="rounded-md border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50"
+                >
+                  {t.order.wuEmail}
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
         <section className="rounded-xl border border-slate-200 bg-white p-4">

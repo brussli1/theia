@@ -6,17 +6,20 @@ import { BACKEND_URL, CART_COOKIE } from "./backend";
 
 export type CheckoutError = "cart_empty" | "unavailable" | "failed";
 
-export type CheckoutState = { error?: CheckoutError };
+export type CheckoutState = { error?: CheckoutError; redirectUrl?: string };
 
-/** Guest checkout: sends the cart cookie and checkout payload to the backend,
- * then redirects to the order confirmation page. Errors are returned so the
- * form can show a localized message. */
+/** Guest checkout: sends the cart cookie and checkout payload to the backend.
+ * Gateway methods (PayPal, card) return the gateway's redirect URL for the
+ * browser to follow; Western Union orders redirect straight to the
+ * confirmation page. Errors are returned so the form can show a localized
+ * message. */
 export async function placeOrder(formData: FormData): Promise<CheckoutState> {
   const cartId = cookies().get(CART_COOKIE)?.value;
   const payload = {
     email: formData.get("email"),
     phone: formData.get("phone"),
     delivery_type: formData.get("delivery_type"),
+    payment_method: formData.get("payment_method"),
     name: formData.get("name"),
     address: formData.get("address"),
     city: formData.get("city"),
@@ -40,7 +43,13 @@ export async function placeOrder(formData: FormData): Promise<CheckoutState> {
     }
     return { error: response.status === 400 ? "cart_empty" : "failed" };
   }
-  const { order_number } = (await response.json()) as { order_number: string };
+  const body = (await response.json()) as {
+    order_number: string;
+    payment_redirect_url: string | null;
+  };
+  if (body.payment_redirect_url) {
+    return { redirectUrl: body.payment_redirect_url };
+  }
   const email = String(payload.email);
-  redirect(`/pedido/${order_number}?email=${encodeURIComponent(email)}`);
+  redirect(`/pedido/${body.order_number}?email=${encodeURIComponent(email)}`);
 }

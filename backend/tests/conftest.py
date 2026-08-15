@@ -8,6 +8,7 @@ TEST_DATABASE_URL = os.getenv(
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ["DATABASE_URL_SYNC"] = TEST_DATABASE_URL.replace("+asyncpg", "")
 os.environ["ENVIRONMENT"] = "test"
+os.environ["PAYMENT_MODE"] = "sandbox"
 
 import psycopg2
 import pytest
@@ -50,7 +51,7 @@ def clean_tables(database):
         conn.autocommit = True
         with conn.cursor() as cursor:
             cursor.execute(
-                "TRUNCATE collection_products, collections, cart_items, carts, order_items, orders, products, brands, categories RESTART IDENTITY CASCADE"
+                "TRUNCATE collection_products, collections, cart_items, carts, payments, order_items, orders, products, brands, categories RESTART IDENTITY CASCADE"
             )
     yield
 

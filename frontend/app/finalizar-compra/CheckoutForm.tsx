@@ -20,11 +20,17 @@ export default function CheckoutForm({ t }: { t: Dictionary["checkout"] }) {
     if (result.error) {
       setError(result.error);
       setPending(false);
+      return;
+    }
+    if (result.redirectUrl) {
+      // Gateway methods (PayPal, card): the customer pays at the gateway and is
+      // sent back to the order page, which confirms the payment.
+      window.location.assign(result.redirectUrl);
     }
   }
 
   // "Paraguay" is the country default; switching to international delivery
-  // clears it so the buyer has to enter the real destination.
+  // clears it so the customer has to enter the real destination.
   function onDeliveryChange(value: string) {
     const country = document.getElementById("checkout-country") as HTMLInputElement | null;
     if (value === "international" && country?.value === "Paraguay") {
@@ -73,6 +79,44 @@ export default function CheckoutForm({ t }: { t: Dictionary["checkout"] }) {
             {t.deliveryInternational}
           </label>
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="text-sm font-semibold text-slate-900">{t.payment}</legend>
+        <div className="mt-2 flex flex-wrap gap-6 text-sm text-slate-700">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="payment_method"
+              value="paypal"
+              data-testid="payment-paypal"
+              className="accent-slate-900"
+            />
+            {t.paymentPaypal}
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="payment_method"
+              value="western_union"
+              defaultChecked
+              data-testid="payment-western-union"
+              className="accent-slate-900"
+            />
+            {t.paymentWesternUnion}
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="payment_method"
+              value="card"
+              data-testid="payment-card"
+              className="accent-slate-900"
+            />
+            {t.paymentCard}
+          </label>
+        </div>
+        <p className="mt-1 text-xs text-slate-400">{t.paymentNote}</p>
       </fieldset>
 
       <div className="grid gap-4 sm:grid-cols-2">

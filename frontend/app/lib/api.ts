@@ -150,12 +150,18 @@ export type OrderItem = {
   quantity: number;
 };
 
-/** The only status reachable today; Payments (#12) and fulfilment extend it. */
+/** Order statuses (#12): new orders wait for their payment, then move to
+ * `paid` once the gateway confirms it. `received` is the legacy status of
+ * orders created before payments existed. */
+export const ORDER_STATUS_AWAITING_PAYMENT = "awaiting_payment";
+export const ORDER_STATUS_PAID = "paid";
 export const ORDER_STATUS_RECEIVED = "received";
 
 export type Order = {
   order_number: string;
   status: string;
+  payment_method: string | null;
+  payment_currency: string | null;
   email: string;
   phone: string;
   delivery_type: "local" | "international";
@@ -181,6 +187,24 @@ export async function fetchOrder(orderNumber: string, email: string): Promise<Or
   );
   if (!response.ok) {
     throw new Error(`Order request failed: ${response.status}`);
+  }
+  return (await response.json()) as Order;
+}
+
+/** Confirms a gateway payment on the customer's return from the payment page and
+ * returns the order with its fresh status. Server-only; idempotent. */
+export async function confirmPayment(
+  orderNumber: string,
+  paymentRef: string,
+): Promise<Order> {
+  const response = await fetch(`${BACKEND_URL}/api/payments/confirm`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ order_number: orderNumber, payment_ref: paymentRef }),
+  });
+  if (!response.ok) {
+    throw new Error(`Payment confirm failed: ${response.status}`);
   }
   return (await response.json()) as Order;
 }
