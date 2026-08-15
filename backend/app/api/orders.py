@@ -6,7 +6,8 @@ order records a payment method (#12): Western Union orders wait for a manual
 transfer; PayPal and card orders get a payment intent from a swappable
 gateway provider before the order is persisted, and are confirmed via
 `POST /api/payments/confirm`. Orders are looked up by order number plus the
-email used at checkout. #14 adds account order history.
+email used at checkout, and are attached to the customer's account when they
+are signed in (#14); `GET /api/account/orders` lists an account's orders.
 """
 
 from decimal import ROUND_HALF_UP, Decimal
@@ -16,6 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.auth import get_optional_current_user
 from app.api.cart import _cart_id
 from app.api.schemas import CheckoutIn, CheckoutOut, OrderItemOut, OrderOut
 from app.core.config import settings
@@ -32,6 +34,7 @@ from app.models.order import (
     Payment,
     new_order_number,
 )
+from app.models.user import User
 from app.payments.base import PaymentProviderError
 from app.payments.registry import get_provider
 
@@ -54,6 +57,7 @@ async def checkout(
     payload: CheckoutIn,
     request: Request,
     db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_optional_current_user),
 ) -> CheckoutOut:
     cart_id = _cart_id(request)
     cart = await db.get(Cart, cart_id) if cart_id is not None else None
@@ -122,6 +126,7 @@ async def checkout(
         order_number=order_number,
         email=payload.email,
         phone=payload.phone,
+        user_id=current_user.id if current_user else None,
         delivery_type=payload.delivery_type,
         name=payload.name,
         address=payload.address,
@@ -159,7 +164,7 @@ async def checkout(
     db.add(order)
     await db.delete(cart)
     await db.commit()
-    out = await _order_out(db, order)
+    out = await order_out(db, order)
     return CheckoutOut(
         **out.model_dump(),
         payment_redirect_url=intent.redirect_url if intent else None,
@@ -182,10 +187,10 @@ async def get_order(
     ).scalar_one_or_none()
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
-    return await _order_out(db, order)
+    return await order_out(db, order)
 
 
-async def _order_out(db: AsyncSession, order: Order) -> OrderOut:
+async def order_out(db: AsyncSession, order: Order) -> OrderOut:
     items = (
         (
             await db.execute(

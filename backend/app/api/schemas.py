@@ -161,3 +161,29 @@ class QuoteOut(BaseModel):
     message: str | None
     status: str
     created_at: datetime
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    name: str
+
+
+class RegisterIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    email: str = Field(pattern=EMAIL_PATTERN, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+
+
+class LoginIn(BaseModel):
+    email: str = Field(pattern=EMAIL_PATTERN, max_length=254)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class AuthOut(BaseModel):
+    """The session token plus the account it belongs to; register and login
+    both return one so the browser can store it and the account is
+    immediately signed in."""
+
+    token: str
+    user: UserOut

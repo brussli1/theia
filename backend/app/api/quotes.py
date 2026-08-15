@@ -6,14 +6,16 @@ slug and snapshot its name so the request survives catalog changes (like
 OrderItem); orderable products are refused — those belong in the cart.
 After the request is stored, Theia is notified by WhatsApp and email via the
 notification seam (best-effort, see app/notifications). Requests are looked
-up by reference plus the email used to submit, mirroring order lookup; #14
-adds "past quotes" per account.
+up by reference plus the email used to submit, mirroring order lookup, and
+are attached to the customer's account when they are signed in (#14);
+`GET /api/account/quotes` lists an account's requests.
 """
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.auth import get_optional_current_user
 from app.api.schemas import QuoteIn, QuoteOut
 from app.core.database import get_db
 from app.models.catalog import Product
@@ -23,6 +25,7 @@ from app.models.quote import (
     QuoteRequest,
     new_quote_reference,
 )
+from app.models.user import User
 from app.notifications import notify_quote
 
 router = APIRouter(prefix="/api/quotes", tags=["quotes"])
@@ -33,6 +36,7 @@ async def submit_quote(
     payload: QuoteIn,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_optional_current_user),
 ) -> QuoteOut:
     product = None
     if payload.kind == QUOTE_KIND_PRODUCT:
@@ -57,6 +61,7 @@ async def submit_quote(
         name=payload.name,
         email=payload.email,
         phone=payload.phone,
+        user_id=current_user.id if current_user else None,
         message=payload.message,
         product_id=product.id if product else None,
         product_name=product.name if product else None,
@@ -71,7 +76,7 @@ async def submit_quote(
     # block the confirmation — see docs/adr/0002-quotes.md).
     background_tasks.add_task(notify_quote, quote)
 
-    return _quote_out(quote)
+    return quote_out(quote)
 
 
 @router.get("/{reference}", response_model=QuoteOut)
@@ -90,10 +95,10 @@ async def get_quote(
     ).scalar_one_or_none()
     if quote is None:
         raise HTTPException(status_code=404, detail="Quote request not found")
-    return _quote_out(quote)
+    return quote_out(quote)
 
 
-def _quote_out(quote: QuoteRequest) -> QuoteOut:
+def quote_out(quote: QuoteRequest) -> QuoteOut:
     return QuoteOut(
         reference=quote.reference,
         kind=quote.kind,

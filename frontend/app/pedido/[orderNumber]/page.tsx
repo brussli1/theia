@@ -4,14 +4,13 @@ import {
   fetchOrder,
   fetchVisitorCurrency,
   ORDER_STATUS_AWAITING_PAYMENT,
-  ORDER_STATUS_PAID,
-  ORDER_STATUS_RECEIVED,
   type Currency,
   type Order,
 } from "../../lib/api";
 import { CONTACT_EMAIL, WHATSAPP_URL } from "../../lib/contact";
 import { asPriceLine, formatAmount, formatPrice, totalIn } from "../../lib/currency";
 import { getDictionary, getLocale } from "../../lib/i18n";
+import { orderStatusKey } from "../../lib/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -68,14 +67,8 @@ export default async function PedidoPage({
     );
   }
 
-  const statusLabel =
-    order.status === ORDER_STATUS_RECEIVED
-      ? t.order.statusReceived
-      : order.status === ORDER_STATUS_AWAITING_PAYMENT
-        ? t.order.statusAwaitingPayment
-        : order.status === ORDER_STATUS_PAID
-          ? t.order.statusPaid
-          : order.status;
+  const statusKey = orderStatusKey(order.status);
+  const statusLabel = statusKey ? t.order[statusKey] : order.status;
 
   const statusBadge =
     order.status === ORDER_STATUS_AWAITING_PAYMENT

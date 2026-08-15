@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { BACKEND_URL, CART_COOKIE } from "./backend";
+import { accountAuthorizationHeader, BACKEND_URL, CART_COOKIE } from "./backend";
 
 export type CheckoutError = "cart_empty" | "unavailable" | "failed";
 
@@ -33,6 +33,7 @@ export async function placeOrder(formData: FormData): Promise<CheckoutState> {
     cache: "no-store",
     headers: {
       cookie: cartId ? `cart_id=${cartId}` : "",
+      authorization: accountAuthorizationHeader(),
       "content-type": "application/json",
     },
     body: JSON.stringify(payload),

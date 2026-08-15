@@ -1,21 +1,10 @@
 import Link from "next/link";
-import {
-  fetchQuote,
-  QUOTE_KIND_PRODUCT,
-  QUOTE_KIND_RENTAL,
-  QUOTE_KIND_USED,
-  type Quote,
-} from "../../lib/api";
+import { fetchQuote, type Quote } from "../../lib/api";
 import { CONTACT_EMAIL, WHATSAPP_URL } from "../../lib/contact";
 import { getDictionary, getLocale } from "../../lib/i18n";
+import { quoteKindKey } from "../../lib/labels";
 
 export const dynamic = "force-dynamic";
-
-const KIND_KEYS = {
-  [QUOTE_KIND_PRODUCT]: "kindProduct",
-  [QUOTE_KIND_USED]: "kindUsed",
-  [QUOTE_KIND_RENTAL]: "kindRental",
-} as const;
 
 export default async function QuoteConfirmationPage({
   params,
@@ -53,10 +42,7 @@ export default async function QuoteConfirmationPage({
     );
   }
 
-  const kindKey =
-    quote.kind in KIND_KEYS
-      ? KIND_KEYS[quote.kind as keyof typeof KIND_KEYS]
-      : null;
+  const kindKey = quoteKindKey(quote.kind);
   const kindLabel = kindKey ? t.quote[kindKey] : quote.kind;
   const mailSubject = encodeURIComponent(
     `Solicitud de cotización ${quote.reference}`,

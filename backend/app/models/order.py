@@ -19,6 +19,7 @@ from app.core.database import Base
 
 if TYPE_CHECKING:
     from app.models.catalog import Product
+    from app.models.user import User
 
 # Order status: every new order starts `awaiting_payment` and moves to `paid`
 # when the gateway confirms the payment. Fulfilment (admin) adds `shipped`,
@@ -68,6 +69,11 @@ class Order(Base):
     order_number: Mapped[str] = mapped_column(String(20), unique=True, index=True)
     email: Mapped[str] = mapped_column(String(254))
     phone: Mapped[str] = mapped_column(String(40))
+    # The account that placed the order, when the customer was logged in
+    # (#14); guest orders have none.
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     delivery_type: Mapped[str] = mapped_column(String(20))
     name: Mapped[str] = mapped_column(String(200))
     address: Mapped[str] = mapped_column(String(300))
@@ -97,6 +103,7 @@ class Order(Base):
     payments: Mapped[list["Payment"]] = relationship(
         back_populates="order", cascade="all, delete-orphan"
     )
+    user: Mapped["User | None"] = relationship()
 
 
 class OrderItem(Base):

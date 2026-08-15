@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from app.api.account import router as account_router
+from app.api.auth import router as auth_router
 from app.api.cart import router as cart_router
 from app.api.catalog import router as catalog_router
 from app.api.collections import router as collections_router
@@ -22,3 +24,5 @@ app.include_router(orders_router)
 app.include_router(payments_router)
 app.include_router(collections_router)
 app.include_router(quotes_router)
+app.include_router(auth_router)
+app.include_router(account_router)

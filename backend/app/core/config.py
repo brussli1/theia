@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     whatsapp_phone_id: str = ""
     notification_whatsapp_to: str = "595971282908"
 
+    # Accounts (#14): `jwt_secret` signs session tokens. Empty by default —
+    # dev/test/CI fall back to a fixed development secret, production refuses
+    # to sign until it is set (see app/core/security.py).
+    jwt_secret: str = ""
+    jwt_expires_minutes: int = 60 * 24 * 30
+
     @property
     def debug(self) -> bool:
         return self.environment == "development"

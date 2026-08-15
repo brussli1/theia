@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.orders import _order_out
+from app.api.orders import order_out
 from app.api.schemas import ConfirmIn, OrderOut
 from app.core.database import get_db
 from app.models.order import (
@@ -62,4 +62,4 @@ async def confirm_payment(
             order.status = ORDER_STATUS_PAID
             await db.commit()
 
-    return await _order_out(db, order)
+    return await order_out(db, order)

@@ -6,7 +6,7 @@ E-commerce catalog and storefront for ophthalmological equipment, sold to profes
 
 **Customer**:
 A professional buyer — ophthalmologist, optometrist, clinic, or equipment distributor.
-_Avoid_: client, buyer, user, account
+_Avoid_: client, buyer, user
 
 **Product**:
 A new item of ophthalmological equipment or consumable offered for sale in the catalog.
@@ -60,6 +60,10 @@ _Avoid_: group, bucket, carousel
 **Cart**:
 A buyer's in-progress selection of orderable Products.
 _Avoid_: basket, bag
+
+**User**:
+A customer's registered identity — an email and password — used to see their Order and QuoteRequest history. Guest checkout remains available without one, and orders/quote requests are linked to the User that created them. Colloquially an "account" (the account page is `/cuenta`).
+_Avoid_: profile, login (as a noun)
 
 **Order**:
 A buyer's completed purchase of orderable Products.

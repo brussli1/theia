@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { accountAuthorizationHeader } from "./backend";
 
 export type Facet = {
   slug: string;
@@ -256,4 +257,52 @@ export async function fetchQuote(reference: string, email: string): Promise<Quot
 
 export function formatBrandCategory(brand: string | null, category: string | null): string {
   return [brand, category].filter(Boolean).join(" · ");
+}
+
+/** A customer's registered identity (#14); used to see order and quote
+ * history. The session token lives in the `auth_token` cookie. */
+export type User = {
+  id: number;
+  email: string;
+  name: string;
+};
+
+/** The signed-in customer from the incoming request's cookie, or null when
+ * there is no session. Server-only. */
+export async function fetchCurrentUser(): Promise<User | null> {
+  const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+    cache: "no-store",
+    headers: { authorization: accountAuthorizationHeader() },
+  });
+  if (response.status === 401) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(`Auth request failed: ${response.status}`);
+  }
+  return (await response.json()) as User;
+}
+
+/** The signed-in customer's orders, newest first (#14). Server-only. */
+export async function fetchAccountOrders(): Promise<Order[]> {
+  const response = await fetch(`${BACKEND_URL}/api/account/orders`, {
+    cache: "no-store",
+    headers: { authorization: accountAuthorizationHeader() },
+  });
+  if (!response.ok) {
+    throw new Error(`Account orders request failed: ${response.status}`);
+  }
+  return (await response.json()) as Order[];
+}
+
+/** The signed-in customer's quote requests, newest first (#14). Server-only. */
+export async function fetchAccountQuotes(): Promise<Quote[]> {
+  const response = await fetch(`${BACKEND_URL}/api/account/quotes`, {
+    cache: "no-store",
+    headers: { authorization: accountAuthorizationHeader() },
+  });
+  if (!response.ok) {
+    throw new Error(`Account quotes request failed: ${response.status}`);
+  }
+  return (await response.json()) as Quote[];
 }

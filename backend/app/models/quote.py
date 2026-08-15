@@ -19,6 +19,7 @@ from app.core.database import Base
 
 if TYPE_CHECKING:
     from app.models.catalog import Product
+    from app.models.user import User
 
 # What the customer is asking a quote for.
 QUOTE_KIND_PRODUCT = "product"
@@ -47,6 +48,11 @@ class QuoteRequest(Base):
     name: Mapped[str] = mapped_column(String(200))
     email: Mapped[str] = mapped_column(String(254))
     phone: Mapped[str] = mapped_column(String(40))
+    # The account that submitted the request, when the customer was logged in
+    # (#14); guest requests have none.
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     message: Mapped[str | None] = mapped_column(Text, nullable=True)
     product_id: Mapped[int | None] = mapped_column(
         ForeignKey("products.id", ondelete="SET NULL"), nullable=True
@@ -65,3 +71,4 @@ class QuoteRequest(Base):
     )
 
     product: Mapped["Product | None"] = relationship()
+    user: Mapped["User | None"] = relationship()

@@ -44,6 +44,9 @@ export default async function Header() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-4">
+          <Link href="/cuenta" className="text-sm text-slate-600 hover:text-slate-900">
+            {t.header.account}
+          </Link>
           <Link href="/carrito" className="relative text-sm text-slate-600 hover:text-slate-900">
             {t.cart.title}
             {cartCount > 0 && (
