@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Facet } from "../lib/api";
+import type { Dictionary } from "../lib/i18n";
 
 const CERTIFICATIONS = ["FDA", "CE", "ISO"];
 
@@ -10,10 +11,12 @@ export default function ProductFilters({
   categories,
   brands,
   currentQuery,
+  t,
 }: {
   categories: Facet[];
   brands: Facet[];
   currentQuery: string;
+  t: Dictionary["filters"];
 }) {
   const router = useRouter();
   const current = new URLSearchParams(currentQuery);
@@ -49,23 +52,23 @@ export default function ProductFilters({
       }}
     >
       <label className="flex flex-col gap-1 text-xs text-slate-500">
-        Buscar
+        {t.search}
         <input
           type="search"
           value={q}
           onChange={(event) => setQ(event.target.value)}
-          placeholder="Nombre o descripción"
+          placeholder={t.searchPlaceholder}
           className="rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-700"
         />
       </label>
       <label className="flex flex-col gap-1 text-xs text-slate-500">
-        Categoría
+        {t.category}
         <select
           value={category}
           onChange={(event) => setCategory(event.target.value)}
           className={selectClass}
         >
-          <option value="">Todas</option>
+          <option value="">{t.all}</option>
           {categories.map((facet) => (
             <option key={facet.slug} value={facet.slug}>
               {facet.name}
@@ -74,13 +77,13 @@ export default function ProductFilters({
         </select>
       </label>
       <label className="flex flex-col gap-1 text-xs text-slate-500">
-        Marca
+        {t.brand}
         <select
           value={brand}
           onChange={(event) => setBrand(event.target.value)}
           className={selectClass}
         >
-          <option value="">Todas</option>
+          <option value="">{t.all}</option>
           {brands.map((facet) => (
             <option key={facet.slug} value={facet.slug}>
               {facet.name}
@@ -89,13 +92,13 @@ export default function ProductFilters({
         </select>
       </label>
       <label className="flex flex-col gap-1 text-xs text-slate-500">
-        Certificación
+        {t.certification}
         <select
           value={certification}
           onChange={(event) => setCertification(event.target.value)}
           className={selectClass}
         >
-          <option value="">Cualquiera</option>
+          <option value="">{t.any}</option>
           {CERTIFICATIONS.map((cert) => (
             <option key={cert} value={cert}>
               {cert}
@@ -104,7 +107,7 @@ export default function ProductFilters({
         </select>
       </label>
       <label className="flex flex-col gap-1 text-xs text-slate-500">
-        Precio mín. (Gs)
+        {t.priceMin}
         <input
           type="number"
           min="0"
@@ -114,7 +117,7 @@ export default function ProductFilters({
         />
       </label>
       <label className="flex flex-col gap-1 text-xs text-slate-500">
-        Precio máx. (Gs)
+        {t.priceMax}
         <input
           type="number"
           min="0"
@@ -124,22 +127,22 @@ export default function ProductFilters({
         />
       </label>
       <label className="flex flex-col gap-1 text-xs text-slate-500">
-        Ordenar
+        {t.sort}
         <select
           value={sort}
           onChange={(event) => setSort(event.target.value)}
           className={selectClass}
         >
-          <option value="newest">Más recientes</option>
-          <option value="price_asc">Precio: menor a mayor</option>
-          <option value="price_desc">Precio: mayor a menor</option>
+          <option value="newest">{t.newest}</option>
+          <option value="price_asc">{t.priceAsc}</option>
+          <option value="price_desc">{t.priceDesc}</option>
         </select>
       </label>
       <button
         type="submit"
         className="rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
       >
-        Aplicar
+        {t.apply}
       </button>
     </form>
   );

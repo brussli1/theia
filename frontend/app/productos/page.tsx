@@ -1,6 +1,7 @@
 import ProductGrid from "../components/ProductGrid";
 import Pagination from "../components/Pagination";
-import { fetchProducts } from "../lib/api";
+import { fetchProducts, fetchVisitorCurrency } from "../lib/api";
+import { getDictionary, getLocale } from "../lib/i18n";
 import ProductFilters from "./ProductFilters";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,9 @@ export default async function ProductosPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const locale = getLocale();
+  const t = getDictionary(locale);
+
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(searchParams)) {
     const first = Array.isArray(value) ? value[0] : value;
@@ -19,12 +23,16 @@ export default async function ProductosPage({
   if (!params.get("page")) params.set("page", "1");
 
   let page;
+  let currency;
   try {
-    page = await fetchProducts(params);
+    [page, currency] = await Promise.all([
+      fetchProducts(params),
+      fetchVisitorCurrency(),
+    ]);
   } catch {
     return (
       <main className="mx-auto max-w-6xl p-8">
-        <p className="text-sm text-red-600">No se pudo cargar el catálogo.</p>
+        <p className="text-sm text-red-600">{t.catalogError}</p>
       </main>
     );
   }
@@ -38,16 +46,17 @@ export default async function ProductosPage({
 
   return (
     <main className="mx-auto max-w-6xl p-8">
-      <h1 className="text-2xl font-semibold text-slate-900">Productos</h1>
-      <p className="mt-1 text-sm text-slate-500">{page.total} productos</p>
+      <h1 className="text-2xl font-semibold text-slate-900">{t.header.products}</h1>
+      <p className="mt-1 text-sm text-slate-500">{t.listing.productsCount(page.total)}</p>
       <div className="mt-6">
         <ProductFilters
           categories={page.categories}
           brands={page.brands}
           currentQuery={current.toString()}
+          t={t.filters}
         />
       </div>
-      <ProductGrid products={page.items} />
+      <ProductGrid products={page.items} currency={currency} />
       <Pagination page={page.page} pages={page.pages} buildPageUrl={buildPageUrl} />
     </main>
   );

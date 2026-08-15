@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { fetchCategories, type Facet } from "../lib/api";
+import { getDictionary, getLocale } from "../lib/i18n";
+import LocaleSwitcher from "./LocaleSwitcher";
 
 export default async function Header() {
+  const locale = getLocale();
+  const t = getDictionary(locale);
   let categories: Facet[] = [];
   try {
     categories = await fetchCategories();
@@ -17,7 +21,7 @@ export default async function Header() {
         </Link>
         <nav className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
           <Link href="/productos" className="hover:text-slate-900">
-            Productos
+            {t.header.products}
           </Link>
           {categories.map((category) => (
             <Link
@@ -29,6 +33,9 @@ export default async function Header() {
             </Link>
           ))}
         </nav>
+        <div className="ml-auto">
+          <LocaleSwitcher currentLocale={locale} />
+        </div>
       </div>
     </header>
   );

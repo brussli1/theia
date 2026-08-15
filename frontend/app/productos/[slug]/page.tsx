@@ -1,10 +1,7 @@
 import { notFound } from "next/navigation";
-import {
-  fetchCurrency,
-  fetchProduct,
-  formatBrandCategory,
-  formatPrice,
-} from "../../lib/api";
+import { fetchProduct, fetchVisitorCurrency, formatBrandCategory } from "../../lib/api";
+import { formatPrice } from "../../lib/currency";
+import { getDictionary, getLocale } from "../../lib/i18n";
 import Gallery from "./Gallery";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +11,15 @@ export default async function ProductoPage({
 }: {
   params: { slug: string };
 }) {
+  const locale = getLocale();
+  const t = getDictionary(locale);
   let product;
   let currency;
   try {
-    [product, currency] = await Promise.all([fetchProduct(params.slug), fetchCurrency()]);
+    [product, currency] = await Promise.all([
+      fetchProduct(params.slug),
+      fetchVisitorCurrency(),
+    ]);
   } catch {
     notFound();
   }
@@ -25,7 +27,7 @@ export default async function ProductoPage({
   return (
     <main className="mx-auto max-w-6xl p-8">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-        <Gallery images={product.images} name={product.name} />
+        <Gallery images={product.images} name={product.name} t={t.product} />
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             {product.certifications.map((cert) => (
@@ -43,30 +45,30 @@ export default async function ProductoPage({
           </p>
           {!product.available && (
             <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-              Producto no disponible
+              {t.product.unavailable}
             </p>
           )}
           <p className="text-3xl font-semibold text-slate-900" data-testid="price">
-            {formatPrice(product.price_gs, product.price_usd, currency)}
+            {formatPrice(product.price_gs, product.price_usd, currency, locale)}
           </p>
           {product.orderable ? (
             <button
               type="button"
               className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-700"
             >
-              Agregar al carrito
+              {t.product.addToCart}
             </button>
           ) : (
             <button
               type="button"
               className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-900 hover:bg-slate-100"
             >
-              Solicitar cotización
+              {t.product.requestQuote}
             </button>
           )}
           <div className="mt-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Descripción
+              {t.product.description}
             </h2>
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700">
               {product.description}
@@ -75,7 +77,7 @@ export default async function ProductoPage({
           {product.specifications.length > 0 && (
             <div className="mt-4">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Especificaciones
+                {t.product.specifications}
               </h2>
               <dl className="mt-2 divide-y divide-slate-200 rounded-lg border border-slate-200">
                 {product.specifications.map((spec) => (

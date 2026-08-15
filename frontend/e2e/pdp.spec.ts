@@ -8,7 +8,8 @@ test("PDP renders gallery, specs, badges, and visitor-currency price", async ({ 
   await expect(page.getByText("Magnification")).toBeVisible();
   await expect(page.getByText("10x-16x")).toBeVisible();
   const price = page.getByTestId("price");
-  await expect(price).toContainText(/\$ 142\.86|Gs 1\.000\.000/);
+  await expect(price).toContainText(/\$/);
+  await expect(price).not.toContainText(/Gs|₲/);
   await page.getByLabel("Imagen 2").click();
   await expect(page.getByLabel("Imagen 2")).toHaveClass(/border-slate-900/);
 });

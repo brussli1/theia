@@ -1,7 +1,17 @@
 import Link from "next/link";
-import { formatBrandCategory, formatGs, formatUsd, type ProductCard } from "../lib/api";
+import { formatBrandCategory, type ProductCard } from "../lib/api";
+import { formatPrice, type Currency } from "../lib/currency";
+import { getDictionary, getLocale } from "../lib/i18n";
 
-export default function ProductCardView({ product }: { product: ProductCard }) {
+export default function ProductCardView({
+  product,
+  currency,
+}: {
+  product: ProductCard;
+  currency: Currency;
+}) {
+  const locale = getLocale();
+  const t = getDictionary(locale);
   const quoteOnly = !product.orderable;
   const unavailable = !product.available;
 
@@ -15,19 +25,19 @@ export default function ProductCardView({ product }: { product: ProductCard }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
         ) : (
-          <span className="text-xs text-slate-400">Sin imagen</span>
+          <span className="text-xs text-slate-400">{t.card.noImage}</span>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-center gap-2">
           {quoteOnly && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-              Solo cotización
+              {t.card.quoteOnly}
             </span>
           )}
           {unavailable && (
             <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-              No disponible
+              {t.card.unavailable}
             </span>
           )}
         </div>
@@ -41,8 +51,9 @@ export default function ProductCardView({ product }: { product: ProductCard }) {
           {formatBrandCategory(product.brand, product.category)}
         </p>
         <div className="mt-auto pt-2">
-          <p className="text-sm font-semibold text-slate-900">{formatGs(product.price_gs)}</p>
-          <p className="text-xs text-slate-500">{formatUsd(product.price_usd)}</p>
+          <p className="text-sm font-semibold text-slate-900" data-testid="card-price">
+            {formatPrice(product.price_gs, product.price_usd, currency, locale)}
+          </p>
         </div>
       </div>
     </div>

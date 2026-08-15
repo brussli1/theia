@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getBackendHealth } from "./lib/health";
+import { getDictionary, getLocale } from "./lib/i18n";
 
 function HealthRow({ label, value }: { label: string; value: string }) {
   const color =
@@ -13,24 +14,23 @@ function HealthRow({ label, value }: { label: string; value: string }) {
 }
 
 export default async function Home() {
+  const t = getDictionary(getLocale());
   const health = await getBackendHealth();
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-8">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Theia</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Storefront platform for ophthalmological equipment
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{t.home.subtitle}</p>
         <dl className="mt-6 space-y-3 text-sm">
-          <HealthRow label="Backend" value={health.status} />
-          <HealthRow label="Database" value={health.database} />
+          <HealthRow label={t.home.backend} value={health.status} />
+          <HealthRow label={t.home.database} value={health.database} />
         </dl>
         <Link
           href="/productos"
           className="mt-6 inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
         >
-          Ver productos
+          {t.home.viewProducts}
         </Link>
       </div>
     </main>

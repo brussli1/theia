@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import CatalogListing from "../../components/CatalogListing";
-import { fetchCategories, fetchProducts } from "../../lib/api";
+import { fetchCategories, fetchProducts, fetchVisitorCurrency } from "../../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +14,9 @@ export default async function CategoriaPage({
   const pageNumber = Math.max(1, Number(searchParams.page) || 1);
   let categories;
   let page;
+  let currency;
   try {
-    [categories, page] = await Promise.all([
+    [categories, page, currency] = await Promise.all([
       fetchCategories(),
       fetchProducts(
         new URLSearchParams({
@@ -24,6 +25,7 @@ export default async function CategoriaPage({
           page: String(pageNumber),
         })
       ),
+      fetchVisitorCurrency(),
     ]);
   } catch {
     notFound();
@@ -40,6 +42,7 @@ export default async function CategoriaPage({
       products={page.items}
       page={page.page}
       pages={page.pages}
+      currency={currency}
       buildPageUrl={(target) => `/categorias/${params.slug}?page=${target}`}
     />
   );

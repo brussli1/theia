@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import CatalogListing from "../../components/CatalogListing";
-import { fetchBrands, fetchProducts } from "../../lib/api";
+import { fetchBrands, fetchProducts, fetchVisitorCurrency } from "../../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +14,9 @@ export default async function MarcaPage({
   const pageNumber = Math.max(1, Number(searchParams.page) || 1);
   let brands;
   let page;
+  let currency;
   try {
-    [brands, page] = await Promise.all([
+    [brands, page, currency] = await Promise.all([
       fetchBrands(),
       fetchProducts(
         new URLSearchParams({
@@ -24,6 +25,7 @@ export default async function MarcaPage({
           page: String(pageNumber),
         })
       ),
+      fetchVisitorCurrency(),
     ]);
   } catch {
     notFound();
@@ -40,6 +42,7 @@ export default async function MarcaPage({
       products={page.items}
       page={page.page}
       pages={page.pages}
+      currency={currency}
       buildPageUrl={(target) => `/marcas/${params.slug}?page=${target}`}
     />
   );

@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+
 export type Facet = {
   slug: string;
   name: string;
@@ -48,9 +50,18 @@ export type ProductDetail = {
   category: string | null;
 };
 
-export type Currency = "PYG" | "USD";
+export type Currency = import("./currency").Currency;
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
+
+/**
+ * Visitor currency, resolved from the incoming request's IP. Server-only:
+ * next/headers is imported above, so client components must not import this
+ * module at runtime (type-only imports are fine).
+ */
+export async function fetchVisitorCurrency(): Promise<Currency> {
+  return fetchCurrency(headers().get("x-forwarded-for"));
+}
 
 export async function fetchProducts(params: URLSearchParams): Promise<ProductPage> {
   const response = await fetch(`${BACKEND_URL}/api/products?${params.toString()}`, {
@@ -72,10 +83,11 @@ export async function fetchProduct(slug: string): Promise<ProductDetail> {
   return (await response.json()) as ProductDetail;
 }
 
-export async function fetchCurrency(): Promise<Currency> {
+export async function fetchCurrency(forwardedFor?: string | null): Promise<Currency> {
   try {
     const response = await fetch(`${BACKEND_URL}/api/geo/currency`, {
       cache: "no-store",
+      headers: forwardedFor ? { "x-forwarded-for": forwardedFor } : undefined,
     });
     if (!response.ok) {
       return "USD";
@@ -100,22 +112,6 @@ export async function fetchBrands(): Promise<Facet[]> {
     throw new Error(`Brands request failed: ${response.status}`);
   }
   return (await response.json()) as Facet[];
-}
-
-export function formatGs(priceGs: number): string {
-  return `Gs ${priceGs.toLocaleString("es-PY")}`;
-}
-
-export function formatUsd(priceUsd: string): string {
-  return `US$ ${Number(priceUsd).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
-}
-
-export function formatPrice(
-  priceGs: number,
-  priceUsd: string,
-  currency: Currency,
-): string {
-  return currency === "PYG" ? formatGs(priceGs) : formatUsd(priceUsd);
 }
 
 export function formatBrandCategory(brand: string | null, category: string | null): string {

@@ -1,8 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import type { Dictionary } from "../../lib/i18n";
 
-export default function Gallery({ images, name }: { images: string[]; name: string }) {
+export default function Gallery({
+  images,
+  name,
+  t,
+}: {
+  images: string[];
+  name: string;
+  t: Dictionary["product"];
+}) {
   const [index, setIndex] = useState(0);
   const current = images[index] ?? null;
 
@@ -13,7 +22,7 @@ export default function Gallery({ images, name }: { images: string[]; name: stri
           // eslint-disable-next-line @next/next/no-img-element
           <img src={current} alt={name} className="h-full w-full object-contain" />
         ) : (
-          <span className="text-sm text-slate-400">Sin imagen</span>
+          <span className="text-sm text-slate-400">{t.noImage}</span>
         )}
       </div>
       {images.length > 1 && (
@@ -23,7 +32,7 @@ export default function Gallery({ images, name }: { images: string[]; name: stri
               key={src}
               type="button"
               onClick={() => setIndex(i)}
-              aria-label={`Imagen ${i + 1}`}
+              aria-label={`${t.image} ${i + 1}`}
               className={`h-16 w-16 overflow-hidden rounded-lg border ${
                 i === index ? "border-slate-900" : "border-slate-200"
               }`}
