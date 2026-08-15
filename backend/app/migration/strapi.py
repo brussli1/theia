@@ -11,6 +11,7 @@ in ``price_gs``; ``price_usd`` is derived with ``FX_RATE`` (Gs per USD).
 
 import logging
 import re
+from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 
@@ -106,6 +107,13 @@ def parse_product(
         first = categories[0]["attributes"]
         category_slug = first.get("slug") or slugify(first.get("categoria") or "")
     brand_name = resolve_brand_name(attributes, slug)
+    created_at = None
+    raw_created = attributes.get("createdAt")
+    if raw_created:
+        try:
+            created_at = datetime.fromisoformat(raw_created)
+        except ValueError:
+            created_at = None
     return {
         "name": (attributes.get("nombre") or "").strip(),
         "slug": slug,
@@ -115,6 +123,7 @@ def parse_product(
         "images": images,
         "category_slug": category_slug,
         "brand_name": brand_name,
+        "created_at": created_at,
     }
 
 
@@ -188,6 +197,7 @@ async def run(
                     images=data["images"],
                     category_id=category_id,
                     brand_id=brand_id,
+                    created_at=data["created_at"],
                 )
                 session.add(product)
                 seeded.append(product.slug)

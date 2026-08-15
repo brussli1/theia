@@ -1,4 +1,5 @@
-import { getBackendHealth, type BackendHealth } from "./lib/health";
+import Link from "next/link";
+import { getBackendHealth } from "./lib/health";
 
 function HealthRow({ label, value }: { label: string; value: string }) {
   const color =
@@ -12,7 +13,7 @@ function HealthRow({ label, value }: { label: string; value: string }) {
 }
 
 export default async function Home() {
-  const health: BackendHealth = await getBackendHealth();
+  const health = await getBackendHealth();
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-8">
@@ -25,6 +26,12 @@ export default async function Home() {
           <HealthRow label="Backend" value={health.status} />
           <HealthRow label="Database" value={health.database} />
         </dl>
+        <Link
+          href="/productos"
+          className="mt-6 inline-block rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+        >
+          Ver productos
+        </Link>
       </div>
     </main>
   );
