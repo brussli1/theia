@@ -11,6 +11,7 @@ import argparse
 import json
 from dataclasses import asdict
 from pathlib import Path
+from typing import Callable
 
 import httpx
 
@@ -21,8 +22,10 @@ from scripts.uso_inventory_lib import (
     parse_products_page,
 )
 
+BASE_URL = "https://usophthalmic.com"
 
-def get_json(client: httpx.Client, base: str):
+
+def get_json(client: httpx.Client, base: str) -> Callable:
     def fetch(url: str) -> dict:
         response = client.get(f"{base}{url}", timeout=30)
         response.raise_for_status()
@@ -33,15 +36,13 @@ def get_json(client: httpx.Client, base: str):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base", default="https://usophthalmic.com")
     parser.add_argument("--out", default="uso_inventory.json")
-    parser.add_argument("--limit", type=int, default=250)
     args = parser.parse_args()
 
     with httpx.Client(follow_redirects=True) as client:
-        fetch = get_json(client, args.base)
-        raw_products = fetch_items(fetch, "/products.json", "products", args.limit)
-        raw_collections = fetch_items(fetch, "/collections.json", "collections", 250)
+        fetch = get_json(client, BASE_URL)
+        raw_products = fetch_items(fetch, "/products.json", "products")
+        raw_collections = fetch_items(fetch, "/collections.json", "collections")
 
     products = parse_products_page({"products": raw_products})
     collections = parse_collections_page({"collections": raw_collections})
@@ -50,20 +51,23 @@ def main() -> int:
     inventory = {
         "products": [asdict(product) for product in products],
         "collections": [asdict(collection) for collection in collections],
-        "report": report,
+        "report": asdict(report),
     }
     Path(args.out).write_text(json.dumps(inventory, indent=2, ensure_ascii=False))
 
     print(f"Saved {len(products)} products and {len(collections)} collections to {args.out}")
-    print(f"Quote-only products: {report['quote_only_count']}")
-    print(f"Products without images: {report['image_gap_count']}")
-    print(f"Vendors ({report['vendor_count']}):")
-    for row in report["vendors"]:
-        print(f"  {row['count']:4d}  {row['vendor']}")
-    if report["image_gaps"]:
+    print(f"Quote-only products: {report.quote_only_count}")
+    for gap in report.quote_only:
+        print(f"  - {gap.handle} ({gap.title})")
+    print(f"Unpriced products (no usable price): {report.unpriced_count}")
+    print(f"Products without images: {report.image_gap_count}")
+    print(f"Vendors ({report.vendor_count}):")
+    for row in report.vendors:
+        print(f"  {row.count:4d}  {row.vendor}")
+    if report.image_gaps:
         print("Image gaps:")
-        for gap in report["image_gaps"]:
-            print(f"  - {gap['handle']} ({gap['title']})")
+        for gap in report.image_gaps:
+            print(f"  - {gap.handle} ({gap.title})")
     return 0
 
 
