@@ -2,53 +2,81 @@ import { expect, test } from "@playwright/test";
 
 test("mega-menu hover reveals leaf categories and navigates", async ({ page }) => {
   await page.goto("/productos");
-  if ((await page.getByTestId("menu-trigger-exam-room-essentials").count()) === 0) {
+  const banner = page.getByRole("banner");
+  if ((await banner.getByTestId("menu-trigger-exam-room-essentials").count()) === 0) {
     test.skip(true, "imported category tree not present (run scripts.uso_import)");
   }
-  await page.getByTestId("menu-trigger-exam-room-essentials").hover();
-  const panel = page.getByTestId("menu-panel-exam-room-essentials");
+  await banner.getByTestId("menu-trigger-exam-room-essentials").hover();
+  const panel = banner.getByTestId("menu-panel-exam-room-essentials");
   await expect(panel).toBeVisible();
   await panel.getByRole("link", { name: "Autorefractors", exact: true }).first().click();
   await expect(page).toHaveURL(/\/categorias\/autorefractors$/);
+  await expect(page.getByRole("heading", { name: "Autorefractors" })).toBeVisible();
+  await expect(page.getByTestId("product-card").first()).toBeVisible();
 });
 
 test("mega-menu opens on keyboard focus", async ({ page }) => {
   await page.goto("/productos");
-  if ((await page.getByTestId("menu-trigger-optical").count()) === 0) {
+  const banner = page.getByRole("banner");
+  if ((await banner.getByTestId("menu-trigger-optical").count()) === 0) {
     test.skip(true, "imported category tree not present (run scripts.uso_import)");
   }
-  await page.getByTestId("menu-trigger-optical").focus();
-  const panel = page.getByTestId("menu-panel-optical");
+  await banner.getByTestId("menu-trigger-optical").focus();
+  const panel = banner.getByTestId("menu-panel-optical");
   await expect(panel).toBeVisible();
   await panel.getByRole("link", { name: "Edgers", exact: true }).click();
   await expect(page).toHaveURL(/\/categorias\/edgers$/);
+  await expect(page.getByRole("heading", { name: "Edgers" })).toBeVisible();
+});
+
+test("mega-menu opens by tap on a mobile viewport", async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+  });
+  const page = await context.newPage();
+  await page.goto("/productos");
+  const banner = page.getByRole("banner");
+  if ((await banner.getByTestId("menu-trigger-specialized-equipment").count()) === 0) {
+    await context.close();
+    test.skip(true, "imported category tree not present (run scripts.uso_import)");
+  }
+  await banner.getByTestId("menu-trigger-specialized-equipment").tap();
+  const panel = banner.getByTestId("menu-panel-specialized-equipment");
+  await expect(panel).toBeVisible();
+  await panel.getByRole("link", { name: "Dry Eye", exact: true }).click();
+  await expect(page).toHaveURL(/\/categorias\/dry-eye$/);
+  await context.close();
 });
 
 test("childless categories stay plain header links", async ({ page }) => {
   await page.goto("/productos");
-  await expect(page.getByRole("link", { name: "Auto-refractores" })).toBeVisible();
-  await page.getByRole("link", { name: "Auto-refractores" }).click();
+  const banner = page.getByRole("banner");
+  await expect(banner.getByRole("link", { name: "Auto-refractores" })).toBeVisible();
+  await banner.getByRole("link", { name: "Auto-refractores" }).click();
   await expect(page).toHaveURL(/\/categorias\/auto-refractores$/);
 });
 
 test("parent category page lists its child categories", async ({ page }) => {
   await page.goto("/categorias/exam-room-essentials");
-  if ((await page.getByTestId("child-category-link").count()) === 0) {
+  const main = page.getByRole("main");
+  if ((await main.getByTestId("child-category-link").count()) === 0) {
     test.skip(true, "imported category tree not present (run scripts.uso_import)");
   }
-  await expect(page.getByRole("heading", { name: "Exam Room Essentials" })).toBeVisible();
-  await expect(page.getByTestId("child-category-link")).toHaveCount(7);
-  await page.getByRole("link", { name: "Refraction" }).click();
+  await expect(main.getByRole("heading", { name: "Exam Room Essentials" })).toBeVisible();
+  await expect(main.getByTestId("child-category-link")).toHaveCount(7);
+  await main.getByRole("link", { name: "Refraction" }).click();
   await expect(page).toHaveURL(/\/categorias\/refraction$/);
 });
 
 test("subgroup category page lists its leaf children", async ({ page }) => {
   await page.goto("/categorias/refraction");
-  if ((await page.getByTestId("child-category-link").count()) === 0) {
+  const main = page.getByRole("main");
+  if ((await main.getByTestId("child-category-link").count()) === 0) {
     test.skip(true, "imported category tree not present (run scripts.uso_import)");
   }
-  await expect(page.getByTestId("child-category-link")).toHaveCount(2);
-  await expect(page.getByRole("link", { name: "Autorefractors" })).toBeVisible();
+  await expect(main.getByTestId("child-category-link")).toHaveCount(2);
+  await expect(main.getByRole("link", { name: "Autorefractors" })).toBeVisible();
 });
 
 test("category page lists only its products", async ({ page }) => {

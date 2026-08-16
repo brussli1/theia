@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCategoryTree } from "./categories";
+import { buildCategoryTree, findNodeBySlug } from "./categories";
 
 const FLAT = [
   { id: 6, slug: "special", name: "Special", parent_id: null },
@@ -51,5 +51,17 @@ describe("buildCategoryTree", () => {
       ...tree.flatMap((node) => node.children.map((child) => child.slug)),
     ];
     expect(slugs).not.toContain("ghost");
+  });
+});
+
+describe("findNodeBySlug", () => {
+  it("finds nodes at any depth", () => {
+    const tree = buildCategoryTree(FLAT);
+    expect(findNodeBySlug(tree, "exam-room-essentials")?.name).toBe(
+      "Exam Room Essentials",
+    );
+    expect(findNodeBySlug(tree, "refraction")?.name).toBe("Refraction");
+    expect(findNodeBySlug(tree, "autorefractors")?.name).toBe("Autorefractors");
+    expect(findNodeBySlug(tree, "missing")).toBeUndefined();
   });
 });

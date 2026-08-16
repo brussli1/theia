@@ -9,8 +9,8 @@ export type CategoryTreeNode = {
 
 /** Groups the flat categories API response into a tree.
  *
- * Roots and siblings keep the backend's insertion order (id ascending),
- * which mirrors the curated menu order of the import.
+ * Siblings are sorted by id ascending, which mirrors the curated menu order
+ * of the import (parents are inserted in menu order).
  */
 export function buildCategoryTree(categories: CategoryFacet[]): CategoryTreeNode[] {
   const byId = new Map<number, CategoryTreeNode>();
@@ -48,4 +48,21 @@ export function buildCategoryTree(categories: CategoryFacet[]): CategoryTreeNode
     }
   }
   return roots;
+}
+
+/** Finds a node anywhere in the tree by its slug. */
+export function findNodeBySlug(
+  tree: CategoryTreeNode[],
+  slug: string,
+): CategoryTreeNode | undefined {
+  for (const node of tree) {
+    if (node.slug === slug) {
+      return node;
+    }
+    const found = findNodeBySlug(node.children, slug);
+    if (found) {
+      return found;
+    }
+  }
+  return undefined;
 }

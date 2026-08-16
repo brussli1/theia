@@ -8,7 +8,7 @@ import {
   fetchVisitorCurrency,
   type CategoryFacet,
 } from "../../lib/api";
-import { buildCategoryTree } from "../../lib/categories";
+import { buildCategoryTree, findNodeBySlug } from "../../lib/categories";
 import { getDictionary, getLocale } from "../../lib/i18n";
 import { pageMetadata } from "../../lib/metadata";
 
@@ -59,8 +59,7 @@ export default async function CategoriaPage({
     notFound();
   }
   const tree = buildCategoryTree(categories);
-  const nodes = [...tree, ...tree.flatMap((node) => node.children)];
-  const category = nodes.find((node) => node.slug === params.slug);
+  const category = findNodeBySlug(tree, params.slug);
   if (!category) {
     notFound();
   }

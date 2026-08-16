@@ -4,6 +4,22 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import type { CategoryTreeNode } from "../lib/categories";
 
+function MenuLink({
+  href,
+  children,
+  className,
+}: {
+  href: string;
+  children: string;
+  className: string;
+}) {
+  return (
+    <Link href={href} className={`${className} transition-colors hover:text-brand-700`}>
+      {children}
+    </Link>
+  );
+}
+
 /** Dropdown mega-menu for the category tree. Opens on hover (desktop),
  *  tap (mobile, via the trigger button) and keyboard focus. */
 export default function CategoryMenu({ tree }: { tree: CategoryTreeNode[] }) {
@@ -22,22 +38,19 @@ export default function CategoryMenu({ tree }: { tree: CategoryTreeNode[] }) {
     }
     closeTimer.current = setTimeout(() => setOpenSlug(null), 120);
   };
-  const toggle = (slug: string) => {
-    setOpenSlug(openSlug === slug ? null : slug);
-  };
 
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
       {tree.map((root) => {
         if (root.children.length === 0) {
           return (
-            <Link
+            <MenuLink
               key={root.slug}
               href={`/categorias/${root.slug}`}
-              className="text-sm text-slate-600 transition-colors hover:text-brand-700"
+              className="text-sm text-slate-600"
             >
               {root.name}
-            </Link>
+            </MenuLink>
           );
         }
         const isOpen = openSlug === root.slug;
@@ -45,15 +58,23 @@ export default function CategoryMenu({ tree }: { tree: CategoryTreeNode[] }) {
           <div
             key={root.slug}
             className="relative"
-            onMouseEnter={() => open(root.slug)}
-            onMouseLeave={scheduleClose}
+            onPointerEnter={(event) => {
+              if (event.pointerType === "mouse") {
+                open(root.slug);
+              }
+            }}
+            onPointerLeave={(event) => {
+              if (event.pointerType === "mouse") {
+                scheduleClose();
+              }
+            }}
           >
             <button
               type="button"
               aria-expanded={isOpen}
               aria-haspopup="true"
               data-testid={`menu-trigger-${root.slug}`}
-              onClick={() => toggle(root.slug)}
+              onClick={() => open(root.slug)}
               onFocus={() => open(root.slug)}
               className={`flex items-center gap-1 text-sm transition-colors ${
                 isOpen ? "font-medium text-brand-700" : "text-slate-600 hover:text-brand-700"
@@ -66,45 +87,53 @@ export default function CategoryMenu({ tree }: { tree: CategoryTreeNode[] }) {
               <div
                 data-testid={`menu-panel-${root.slug}`}
                 className="absolute left-0 top-full z-50 mt-1 rounded-xl border border-slate-200 bg-white p-5 shadow-lg"
-                onMouseEnter={() => open(root.slug)}
-                onMouseLeave={scheduleClose}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") {
+                    open(root.slug);
+                  }
+                }}
+                onPointerLeave={(event) => {
+                  if (event.pointerType === "mouse") {
+                    scheduleClose();
+                  }
+                }}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
                     setOpenSlug(null);
                   }
                 }}
               >
-                <div className="grid w-max max-w-3xl grid-cols-2 gap-x-8 gap-y-5 md:grid-cols-3">
+                <div className="grid max-h-[70vh] w-max max-w-[min(90vw,48rem)] grid-cols-2 gap-x-8 gap-y-5 overflow-y-auto md:grid-cols-3">
                   {root.children.map((child) => (
                     <div key={child.slug}>
                       {child.children.length > 0 ? (
                         <>
-                          <Link
+                          <MenuLink
                             href={`/categorias/${child.slug}`}
-                            className="block text-sm font-semibold text-slate-900 hover:text-brand-700"
+                            className="block text-sm font-semibold text-slate-900"
                           >
                             {child.name}
-                          </Link>
+                          </MenuLink>
                           <ul className="mt-1.5 space-y-1">
                             {child.children.map((leafNode) => (
                               <li key={leafNode.slug}>
-                                <Link
+                                <MenuLink
                                   href={`/categorias/${leafNode.slug}`}
-                                  className="text-sm text-slate-600 hover:text-brand-700"
+                                  className="text-sm text-slate-600"
                                 >
                                   {leafNode.name}
-                                </Link>
+                                </MenuLink>
                               </li>
                             ))}
                           </ul>
                         </>
                       ) : (
-                        <Link
+                        <MenuLink
                           href={`/categorias/${child.slug}`}
-                          className="block text-sm font-semibold text-slate-900 hover:text-brand-700"
+                          className="block text-sm font-semibold text-slate-900"
                         >
                           {child.name}
-                        </Link>
+                        </MenuLink>
                       )}
                     </div>
                   ))}
