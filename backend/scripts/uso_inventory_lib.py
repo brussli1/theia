@@ -58,6 +58,11 @@ class Product:
     tags: list[str] = field(default_factory=list)
     body_html: str = ""
     images: list[str] = field(default_factory=list)
+    # Per-image alt text, aligned with `images` (may be empty strings).
+    image_alts: list[str] = field(default_factory=list)
+    # Option names with real values; the Shopify default "Title" option is
+    # excluded (its values are recovered from the variant titles instead).
+    options: list[dict] = field(default_factory=list)
     variants: list[Variant] = field(default_factory=list)
     published_at: str = ""
 
@@ -100,6 +105,7 @@ def parse_products_page(raw: dict) -> list[Product]:
 
 
 def parse_product(raw: dict) -> Product:
+    images = [img for img in raw.get("images") or [] if img.get("src")]
     return Product(
         id=int(raw.get("id") or 0),
         title=raw.get("title") or "",
@@ -108,7 +114,15 @@ def parse_product(raw: dict) -> Product:
         product_type=raw.get("product_type") or "",
         tags=list(raw.get("tags") or []),
         body_html=raw.get("body_html") or "",
-        images=[img["src"] for img in raw.get("images") or [] if img.get("src")],
+        images=[img["src"] for img in images],
+        image_alts=[(img.get("alt") or "").strip() for img in images],
+        options=[
+            {
+                "name": option.get("name") or "",
+                "values": list(option.get("values") or []),
+            }
+            for option in raw.get("options") or []
+        ],
         variants=[parse_variant(item) for item in raw.get("variants") or []],
         published_at=raw.get("published_at") or "",
     )

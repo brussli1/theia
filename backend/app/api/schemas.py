@@ -31,9 +31,15 @@ class ProductDetail(BaseModel):
     slug: str
     name: str
     description: str
+    # The sanitized structured description fragment (D1); empty when the
+    # product has none (admin-created products render the plain text).
+    description_html: str = ""
     price_gs: int
     price_usd: str
     images: list[str]
+    # Per-image alt text aligned with `images` (D8); array order is the
+    # display order and index 0 is the hero.
+    image_alt: list[str] = []
     specifications: list[Specification]
     available: bool
     orderable: bool
@@ -219,12 +225,14 @@ class AdminProductOut(BaseModel):
     slug: str
     name: str
     description: str
+    description_html: str = ""
     price_gs: int
     price_usd: str
     available: bool
     orderable: bool
     certifications: list[str]
     images: list[str]
+    image_alt: list[str] = []
     specifications: list[Specification]
     category_id: int | None
     brand_id: int | None

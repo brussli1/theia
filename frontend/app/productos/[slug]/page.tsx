@@ -58,7 +58,7 @@ export default async function ProductoPage({
   return (
     <main className="mx-auto max-w-6xl p-8">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-        <Gallery images={product.images} name={product.name} t={t.product} />
+        <Gallery images={product.images} alts={product.image_alt} name={product.name} t={t.product} />
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             {product.certifications.map((cert) => (
@@ -97,9 +97,13 @@ export default async function ProductoPage({
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
               {t.product.description}
             </h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700">
-              {product.description}
-            </p>
+            {product.description_html ? (
+              <StructuredDescription html={product.description_html} />
+            ) : (
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700">
+                {product.description}
+              </p>
+            )}
           </div>
           {product.specifications.length > 0 && (
             <div className="mt-4">
@@ -119,5 +123,18 @@ export default async function ProductoPage({
         </div>
       </div>
     </main>
+  );
+}
+
+/** Renders the server-sanitized description fragment (allowlist enforced at
+ * import time; admin-created products render plain text instead). */
+function StructuredDescription({ html }: { html: string }) {
+  return (
+    <div
+      className="mt-2 space-y-2 text-sm leading-relaxed text-slate-700"
+      data-testid="structured-description"
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }

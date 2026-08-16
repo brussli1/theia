@@ -45,9 +45,14 @@ export type ProductDetail = {
   slug: string;
   name: string;
   description: string;
+  /** Sanitized structured description fragment (server-side allowlist); empty
+   * for admin-created products, which render the plain `description`. */
+  description_html: string;
   price_gs: number;
   price_usd: string;
   images: string[];
+  /** Per-image alt text aligned with `images`; index 0 is the hero. */
+  image_alt: string[];
   specifications: Specification[];
   available: boolean;
   orderable: boolean;

@@ -27,11 +27,15 @@ def test_parse_products_page_normalizes_shopify_shape():
     assert first.images == [
         "https://cdn.shopify.com/s/files/1/0482/5209/2577/files/panorama.jpg"
     ]
+    assert first.image_alts == ["Ezer Panorama, , Ultra-widefield | US Ophthalmic | more boilerplate"]
+    assert first.options == [{"name": "Color", "values": ["Black", "White"]}]
     assert first.variants[0].title == "Default Title"
     assert first.variants[0].price == 0.0
 
     second = products[1]
     assert second.images == []
+    assert second.image_alts == []
+    assert second.options == [{"name": "Title", "values": ["Default Title"]}]
     assert second.variants[0].price == 1299.0
 
 

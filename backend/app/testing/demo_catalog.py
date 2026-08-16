@@ -13,14 +13,17 @@ BRANDS = [
     (3, "HHOU", "hhou"),
 ]
 
-# (id, name, slug, description, price_gs, price_usd, available, orderable,
-#  certifications, images, specifications, category_id, brand_id, created_at)
+# (id, name, slug, description, description_html, image_alt, price_gs,
+#  price_usd, available, orderable, certifications, images, specifications,
+#  category_id, brand_id, created_at)
 PRODUCTS = [
     (
         1,
         "High Performance Digital Imaging System VK-2s",
         "high-performance-digital-imaging-system-vk-2s",
         "Fundus camera imaging system for retina clinics.",
+        "<p>Captures <strong>ultra-widefield</strong> images for retina clinics.</p>",
+        ["Fundus camera VK-2s", "Fundus camera rear view"],
         1000000,
         142.86,
         True,
@@ -43,6 +46,8 @@ PRODUCTS = [
         "HHOU 7040 Refraction Units",
         "hhou-7040-refraction-units",
         "Refraction unit with digital readout.",
+        "",
+        [],
         144524353,
         20646.34,
         True,
@@ -61,6 +66,8 @@ PRODUCTS = [
         "Auto-refractor Huvitz HRK-1",
         "auto-refractor-huvitz-hrk-1",
         "Auto-refractor and keratometer.",
+        "",
+        [],
         6850,
         0.98,
         False,
@@ -80,6 +87,8 @@ PRODUCTS = [
         "Kowa VK-90 Fundus Camera",
         "kowa-vk-90-fundus-camera",
         "Handheld fundus camera.",
+        "",
+        [],
         50000000,
         7142.86,
         True,

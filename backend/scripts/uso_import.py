@@ -32,11 +32,15 @@ from scripts.uso_import_lib import (
     USO_MENU,
     ImportReport,
     assign_category,
+    available_options,
     brand_from_vendor,
     build_category_plan,
+    clean_alt,
+    extract_specifications,
     fetch_collection_membership,
     html_to_text,
     image_destinations,
+    sanitize_description_html,
     slugify,
     unique_slug,
 )
@@ -167,19 +171,41 @@ async def _import_catalog(
                     for index, relpath in entries
                     if index not in failed_downloads
                 ]
+                alts = product.get("image_alts") or []
+                image_alt = [
+                    clean_alt(alts[position]) or (product["title"] or handle)
+                    for position, (index, _relpath) in enumerate(entries)
+                    if index not in failed_downloads
+                ]
+
+                specifications = extract_specifications(
+                    product.get("body_html") or ""
+                )
+                options = available_options(product)
+                if options:
+                    specifications.append({"key": "Available options", "value": options})
+
+                # The plain description is the sanitized fragment flattened:
+                # iris marketing copy, tables and inline images never reach
+                # either field (D1/D2/D8).
+                description_html = sanitize_description_html(
+                    product.get("body_html") or ""
+                )
 
                 db.add(
                     Product(
                         name=product["title"] or handle,
                         slug=unique_slug(handle, taken_slugs),
-                        description=html_to_text(product.get("body_html") or ""),
+                        description=html_to_text(description_html),
+                        description_html=description_html,
                         price_gs=0,
                         price_usd=0,
                         available=True,
                         orderable=False,
                         certifications=[],
                         images=images,
-                        specifications=[],
+                        image_alt=image_alt,
+                        specifications=specifications,
                         category_id=category_ids.get(category_slug),
                         brand_id=brand_ids.get(vendor_brand) if vendor_brand else None,
                     )

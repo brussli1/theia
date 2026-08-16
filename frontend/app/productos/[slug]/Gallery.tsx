@@ -5,22 +5,26 @@ import type { Dictionary } from "../../lib/i18n";
 
 export default function Gallery({
   images,
+  alts,
   name,
   t,
 }: {
   images: string[];
+  /** Per-image alt text aligned with `images`; falls back to the product name. */
+  alts?: string[];
   name: string;
   t: Dictionary["product"];
 }) {
   const [index, setIndex] = useState(0);
   const current = images[index] ?? null;
+  const currentAlt = alts?.[index] || name;
 
   return (
     <div>
       <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
         {current ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={current} alt={name} className="h-full w-full object-contain" />
+          <img src={current} alt={currentAlt} className="h-full w-full object-contain" />
         ) : (
           <span className="text-sm text-slate-400">{t.noImage}</span>
         )}
@@ -38,7 +42,11 @@ export default function Gallery({
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt={`${name} ${i + 1}`} className="h-full w-full object-cover" />
+              <img
+                src={src}
+                alt={alts?.[i] || `${name} ${i + 1}`}
+                className="h-full w-full object-cover"
+              />
             </button>
           ))}
         </div>

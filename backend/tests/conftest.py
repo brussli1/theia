@@ -67,7 +67,7 @@ def seed_products():
         adapted = list(row)
         # The specifications JSONB column must be adapted as JSON: the default
         # list adapter turns an empty list into an empty jsonb *object* ({}).
-        adapted[10] = psycopg2.extras.Json(adapted[10])
+        adapted[12] = psycopg2.extras.Json(adapted[12])
         return adapted
 
     with _connect() as conn:
@@ -83,10 +83,10 @@ def seed_products():
             cursor.executemany(
                 """
                 INSERT INTO products
-                    (id, name, slug, description, price_gs, price_usd, available,
-                     orderable, certifications, images, specifications,
-                     category_id, brand_id, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (id, name, slug, description, description_html, image_alt,
+                     price_gs, price_usd, available, orderable, certifications,
+                     images, specifications, category_id, brand_id, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 [_adapt(row) for row in PRODUCTS],
             )

@@ -4,7 +4,6 @@ test("PDP renders gallery, specs, badges, and visitor-currency price", async ({ 
   await page.goto("/productos/high-performance-digital-imaging-system-vk-2s");
   await expect(page.getByRole("heading", { name: /VK-2s/ })).toBeVisible();
   await expect(page.getByText("CE", { exact: true })).toBeVisible();
-  await expect(page.getByText("Fundus camera imaging system")).toBeVisible();
   await expect(page.getByText("Magnification")).toBeVisible();
   await expect(page.getByText("10x-16x")).toBeVisible();
   const price = page.getByTestId("price");
@@ -12,6 +11,15 @@ test("PDP renders gallery, specs, badges, and visitor-currency price", async ({ 
   await expect(price).not.toContainText(/Gs|₲/);
   await page.getByLabel("Imagen 2").click();
   await expect(page.getByLabel("Imagen 2")).toHaveClass(/border-slate-900/);
+});
+
+test("structured description renders the sanitized fragment with bold lead-ins", async ({
+  page,
+}) => {
+  await page.goto("/productos/high-performance-digital-imaging-system-vk-2s");
+  const description = page.getByTestId("structured-description");
+  await expect(description).toBeVisible();
+  await expect(description.locator("strong")).toContainText("ultra-widefield");
 });
 
 test("orderable product shows add-to-cart, not quote", async ({ page }) => {

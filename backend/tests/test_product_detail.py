@@ -9,6 +9,10 @@ def test_product_detail_returns_full_payload(seeded):
         "https://placehold.co/750x400?text=VK-2s+1",
         "https://placehold.co/750x400?text=VK-2s+2",
     ]
+    assert body["description_html"] == (
+        "<p>Captures <strong>ultra-widefield</strong> images for retina clinics.</p>"
+    )
+    assert body["image_alt"] == ["Fundus camera VK-2s", "Fundus camera rear view"]
     assert body["specifications"] == [
         {"key": "Magnification", "value": "10x-16x"},
         {"key": "Camera", "value": "CCD"},

@@ -9,6 +9,7 @@ import re
 import time
 import unicodedata
 from dataclasses import dataclass, field
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Callable
 
@@ -309,6 +310,236 @@ def html_to_text(html: str) -> str:
     text = re.sub(r"<[^>]+>", " ", html)
     text = re.sub(r"\s+", " ", html_lib.unescape(text)).strip()
     return re.sub(r"\s+([.,;:!?)])", r"\1", text)
+
+
+# Allowlisted fragment for Product.description_html (D1): the source's
+# structure is bold lead-ins + sections, and everything else is either specs
+# (tables, D2), cross-links (#iris-* blocks, D3) or marketing images (D8).
+_DESCRIPTION_ALLOWED = {"p", "br", "strong", "em", "b", "i", "h3", "h4", "ul", "ol", "li", "a"}
+# Containers whose children pass through without the wrapper element.
+_DESCRIPTION_UNWRAP = {
+    "div", "span", "section", "figure", "figcaption", "blockquote",
+    "font", "center", "small", "sub", "sup", "u",
+}
+# Subtrees dropped entirely: scripts, tables (become specs or are dropped),
+# media, forms, document metadata.
+_DESCRIPTION_DROP = {
+    "script", "style", "table", "thead", "tbody", "tfoot", "tr", "td", "th",
+    "caption", "colgroup", "col", "img", "picture", "iframe", "video", "audio",
+    "svg", "canvas", "object", "embed", "form", "input", "button", "select",
+    "textarea", "head", "title", "meta", "link", "noscript", "template",
+    "source", "track", "map", "area", "hr",
+}
+_VOID_TAGS = {"br", "img", "hr", "meta", "link", "input", "source", "track", "col", "area", "embed"}
+
+
+def _safe_href(href: str) -> str | None:
+    href = href.strip()
+    if href.startswith("/") or href.startswith("http://") or href.startswith("https://"):
+        return href
+    return None
+
+
+class _DescriptionSanitizer(HTMLParser):
+    """Rebuilds the source fragment with an allowlist: unknown container tags
+    unwrap their children, dangerous subtrees (scripts, tables, media, the
+    #iris-* cross-link blocks) are dropped entirely, and `a` keeps only a
+    local or http(s) href plus rel=noopener."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.out: list[str] = []
+        self.open: list[str] = []
+        self.drop_depth = 0
+
+    def _start_drop(self) -> None:
+        if self.drop_depth == 0:
+            self.drop_depth = 1
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if self.drop_depth:
+            if tag not in _VOID_TAGS:
+                self.drop_depth += 1
+            return
+        attr_map = {key: (value or "") for key, value in attrs}
+        if attr_map.get("id", "").startswith("iris-"):
+            self._start_drop()
+            return
+        if tag in _DESCRIPTION_DROP:
+            if tag not in _VOID_TAGS:
+                self._start_drop()
+        elif tag in _DESCRIPTION_UNWRAP:
+            return
+        elif tag == "a":
+            href = _safe_href(attr_map.get("href", ""))
+            if href is None:
+                return
+            self.out.append(f'<a href="{html_lib.escape(href, quote=True)}" rel="noopener">')
+            self.open.append(tag)
+        elif tag in _DESCRIPTION_ALLOWED:
+            self.out.append(f"<{tag}>")
+            if tag not in _VOID_TAGS:
+                self.open.append(tag)
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if self.drop_depth or tag not in _DESCRIPTION_ALLOWED:
+            return
+        self.out.append(f"<{tag}>")
+
+    def handle_endtag(self, tag: str) -> None:
+        if self.drop_depth:
+            if tag not in _VOID_TAGS:
+                self.drop_depth -= 1
+            return
+        if tag in self.open:
+            while self.open and self.open[-1] != tag:
+                self.out.append(f"</{self.open.pop()}>")
+            self.out.append(f"</{self.open.pop()}>")
+
+    def handle_data(self, data: str) -> None:
+        if not self.drop_depth:
+            self.out.append(html_lib.escape(data))
+
+    def finish(self) -> str:
+        while self.open:
+            self.out.append(f"</{self.open.pop()}>")
+        return "".join(self.out)
+
+
+def sanitize_description_html(html: str) -> str:
+    """The structured description fragment (D1): allowlisted tags only, with
+    tables, media and the #iris-* cross-link blocks stripped. Tables never
+    render inside the description — they become specifications or are dropped."""
+    if not html:
+        return ""
+    parser = _DescriptionSanitizer()
+    parser.feed(html)
+    return parser.finish().strip()
+
+
+def clean_alt(alt: str) -> str:
+    """The descriptive part of a Shopify image alt.
+
+    The source repeats its store-wide marketing boilerplate after a pipe, so
+    only the first segment is product-descriptive; the rest is dropped.
+    """
+    if not alt:
+        return ""
+    segment = alt.split("|")[0]
+    segment = re.sub(r"\s*,\s*,\s*", ", ", segment)
+    return re.sub(r"\s+", " ", segment).strip(" ,")
+
+
+class _TableWalker(HTMLParser):
+    """Extracts key/value rows from genuine two-column tables.
+
+    A row is a specification row when it has exactly two non-empty cells, the
+    key cell is a short single-line label (no bullet lists, no sentence
+    punctuation, no embedded images or marketing spans) and the value cell
+    carries real content. Layout rows (separators, 1-cell rows, title_table /
+    explain_table marketing rows) fall through.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.rows: list[list[tuple[str, str]]] = []
+        self._table_depth = 0
+        self._row: list[tuple[str, str]] | None = None
+        self._cell_html: list[str] | None = None
+        self._cell_text: list[str] | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "table":
+            self._table_depth += 1
+        elif tag == "tr" and self._table_depth == 1:
+            self._row = []
+        elif tag in ("td", "th") and self._table_depth == 1 and self._row is not None:
+            self._cell_html = []
+            self._cell_text = []
+        elif self._cell_html is not None:
+            self._cell_html.append(f"<{tag}>")
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if self._cell_html is not None:
+            self._cell_html.append(f"<{tag}>")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "table":
+            self._table_depth = max(0, self._table_depth - 1)
+        elif tag == "tr" and self._table_depth == 1 and self._row is not None:
+            self.rows.append(self._row)
+            self._row = None
+        elif tag in ("td", "th") and self._table_depth == 1 and self._row is not None:
+            if self._cell_html is not None and self._cell_text is not None:
+                self._row.append(("".join(self._cell_html), "".join(self._cell_text)))
+                self._cell_html = None
+                self._cell_text = None
+        elif self._cell_html is not None:
+            self._cell_html.append(f"</{tag}>")
+
+    def handle_data(self, data: str) -> None:
+        if self._cell_text is not None:
+            self._cell_text.append(data)
+
+
+def extract_specifications(html: str) -> list[dict]:
+    """Key/value pairs from genuine two-column tables in the source fragment
+    (D2): [{key, value}] in row order, deduplicated by key. 1-cell layout
+    tables and title_table/explain_table marketing rows produce nothing."""
+    if not html:
+        return []
+    walker = _TableWalker()
+    walker.feed(html)
+    specs: list[dict] = []
+    seen: set[str] = set()
+    for cells in walker.rows:
+        if len(cells) != 2:
+            continue
+        (html_key, text_key), (html_value, text_value) = cells
+        if "<img" in html_key or "<br" in html_key:
+            continue
+        if "title_table" in html_key or "explain_table" in html_key:
+            continue
+        if "<img" in html_value or "title_table" in html_value or "explain_table" in html_value:
+            continue
+        key = re.sub(r"\s+", " ", text_key).strip()
+        value = re.sub(r"\s+", " ", text_value).strip()
+        if not key or not value:
+            continue
+        if len(key) > 120 or key[-1] in ".!?":
+            continue
+        if key.startswith(("▪", "*")):
+            continue
+        if key.lower() in seen:
+            continue
+        seen.add(key.lower())
+        specs.append({"key": key, "value": value})
+    return specs
+
+
+def available_options(product: dict) -> str | None:
+    """The deduplicated variant option values as one line for the specs table
+    (D4); None when the product has no real options.
+
+    Real option names from the source's `options` array win; products whose
+    option name is the Shopify default "Title" fall back to the variant
+    titles (dropping the "Default Title" placeholder).
+    """
+    values: list[str] = []
+    for option in product.get("options") or []:
+        name = (option.get("name") or "").strip().lower()
+        if not name or name == "title":
+            continue
+        for value in option.get("values") or []:
+            value = value.strip()
+            if value and value not in values:
+                values.append(value)
+    if not values:
+        for variant in product.get("variants") or []:
+            value = (variant.get("title") or "").strip()
+            if value and value.lower() != "default title" and value not in values:
+                values.append(value)
+    return ", ".join(values) if values else None
 
 
 def image_extension(url: str) -> str:

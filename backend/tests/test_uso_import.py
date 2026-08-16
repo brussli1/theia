@@ -65,6 +65,121 @@ def test_html_to_text_strips_markup_and_collapses_whitespace():
     assert lib.html_to_text("") == ""
 
 
+def test_sanitize_description_html_keeps_allowlisted_structure():
+    html = (
+        "<p>The <strong>NTZ-BLP-6</strong> &amp; <em>friends</em>.</p>"
+        "<h3>Section</h3><ul><li>One</li><li>Two</li></ul>"
+    )
+    assert lib.sanitize_description_html(html) == (
+        "<p>The <strong>NTZ-BLP-6</strong> &amp; <em>friends</em>.</p>"
+        "<h3>Section</h3><ul><li>One</li><li>Two</li></ul>"
+    )
+
+
+def test_sanitize_description_html_strips_tables_images_and_scripts():
+    html = (
+        "<p>Intro.</p><table><tr><td class=\"td1_table\">Key</td>"
+        "<td class=\"td2_table\">Value</td></tr></table>"
+        "<img src=\"https://evil.example/x.png\" onerror=\"alert(1)\">"
+        "<script>alert('x')</script><p>Outro <br> line.</p>"
+    )
+    assert lib.sanitize_description_html(html) == "<p>Intro.</p><p>Outro <br> line.</p>"
+
+
+def test_sanitize_description_html_drops_iris_blocks_and_unwraps_containers():
+    html = (
+        "<div><p>Lead in.</p><div id=\"iris-related\"><p>Related stuff</p>"
+        "<a href=\"/collections/x\">cat</a></div><p>Tail.</p></div>"
+    )
+    assert lib.sanitize_description_html(html) == "<p>Lead in.</p><p>Tail.</p>"
+
+
+def test_sanitize_description_html_escapes_text_and_filters_links():
+    html = "<p>a &lt; b &gt; c &amp; d</p><a href=\"https://ok.example\">ok</a><a href=\"javascript:alert(1)\">bad</a>"
+    out = lib.sanitize_description_html(html)
+    assert "&lt;" in out and "&amp;" in out
+    assert '<a href="https://ok.example" rel="noopener">ok</a>' in out
+    assert "javascript" not in out
+    assert lib.sanitize_description_html("") == ""
+
+
+def test_clean_alt_takes_first_pipe_segment_and_normalizes():
+    assert lib.clean_alt("Ezer ERK-770, , Autorefractor | Ezer, US Ophthalmic | more") == (
+        "Ezer ERK-770, Autorefractor"
+    )
+    assert lib.clean_alt("  Just an alt  ") == "Just an alt"
+    assert lib.clean_alt("") == ""
+
+
+def test_extract_specifications_parses_genuine_two_column_tables():
+    html = (
+        "<table><tr><td class=\"td1_table\">Sphere Range</td>"
+        "<td class=\"td2_table\">-20D to +20D</td></tr>"
+        "<tr><td class=\"td1_table\">Weight</td>"
+        "<td class=\"td2_table\">About 20KGS</td></tr></table>"
+    )
+    assert lib.extract_specifications(html) == [
+        {"key": "Sphere Range", "value": "-20D to +20D"},
+        {"key": "Weight", "value": "About 20KGS"},
+    ]
+
+
+def test_extract_specifications_ignores_layout_and_marketing_rows():
+    html = (
+        "<table><tr><td colspan=\"2\"><span class=\"title_table\">Features</span></td></tr>"
+        "<tr bgcolor=\"#b0afaf\"><td></td><td></td></tr>"
+        "<tr><td>2.5 Slit Illumination Head<br>Solid metal</td><td></td></tr>"
+        "<tr><td>Zoom lens</td><td><img src=\"x.png\">flexible</td></tr>"
+        "<tr><td><span class=\"explain_table\">Prose line.</span></td><td>More prose.</td></tr>"
+        "</table>"
+    )
+    assert lib.extract_specifications(html) == []
+
+
+def test_extract_specifications_dedupes_keys_and_skips_prose_keys():
+    html = (
+        "<table>"
+        "<tr><td>Weight</td><td>1kg</td></tr>"
+        "<tr><td>weight</td><td>2kg</td></tr>"
+        "<tr><td>This is a long sentence explaining the feature.</td><td>value</td></tr>"
+        "<tr><td>▪ Bullet point</td><td>value</td></tr>"
+        "</table>"
+    )
+    assert lib.extract_specifications(html) == [{"key": "Weight", "value": "1kg"}]
+    assert lib.extract_specifications("") == []
+    assert lib.extract_specifications("<p>no tables here</p>") == []
+
+
+def test_extract_specifications_ignores_marketing_tables_from_real_source():
+    html = (
+        "<table align=\"center\" width=\"95%\"><tbody><tr>"
+        "<td valign=\"middle\" align=\"center\" width=\"40%\"><img src=\"a.jpg\"></td>"
+        "<td width=\"5%\"></td><td><span class=\"title_table\">Digital Camera</span><br>"
+        "<span class=\"explain_table\">High resolution.</span></td>"
+        "</tr></tbody></table>"
+    )
+    assert lib.extract_specifications(html) == []
+
+
+def test_available_options_uses_named_options_then_falls_back_to_variant_titles():
+    product = {
+        "options": [
+            {"name": "Mounting Type", "values": ["Frame - White-Pink", "Headband", "Frame - White-Pink"]},
+        ],
+        "variants": [{"title": "Frame - White-Pink"}, {"title": "Headband"}],
+    }
+    assert lib.available_options(product) == "Frame - White-Pink, Headband"
+
+    default_option = {
+        "options": [{"name": "Title", "values": ["Default Title"]}],
+        "variants": [{"title": "Default Title"}, {"title": "Black"}, {"title": "White"}],
+    }
+    assert lib.available_options(default_option) == "Black, White"
+
+    assert lib.available_options({"options": [], "variants": [{"title": "Default Title"}]}) is None
+    assert lib.available_options({}) is None
+
+
 def test_image_destinations_build_relative_paths_and_extensions():
     destinations = lib.image_destinations(
         "efc-2600", ["https://cdn.example.com/a.JPG?v=1", "https://cdn.example.com/b"]
@@ -114,8 +229,23 @@ def _inventory() -> dict:
                 "title": "Ezer EFC-2600",
                 "handle": "efc-2600",
                 "vendor": "Ezer",
-                "body_html": "<p>Retinal <b>camera</b>.</p>",
-                "images": ["https://cdn.example.com/a.jpg"],
+                "body_html": (
+                    "<p>Retinal <b>camera</b> with <strong>widefield</strong> optics.</p>"
+                    "<table><tr><td class=\"td1_table\">Resolution</td>"
+                    "<td class=\"td2_table\">10M</td></tr></table>"
+                    "<div id=\"iris-related\"><p>Related equipment</p></div>"
+                ),
+                "images": [
+                    "https://cdn.example.com/a.jpg",
+                    "https://cdn.example.com/b.jpg",
+                ],
+                "image_alts": [
+                    "Ezer EFC-2600, , front | US Ophthalmic | boilerplate",
+                    "",
+                ],
+                "options": [
+                    {"name": "Mounting Type", "values": ["Frame", "Headband"]},
+                ],
             },
             {
                 "id": 2,
@@ -123,7 +253,9 @@ def _inventory() -> dict:
                 "handle": "2win",
                 "vendor": "US Ophthalmic",
                 "body_html": "",
-                "images": [],
+                "images": ["https://cdn.example.com/win.jpg"],
+                "image_alts": ["2WIN compact fundus camera"],
+                "options": [],
             },
         ],
         "collections": [
@@ -153,9 +285,14 @@ def test_import_writes_tree_products_brands_and_images(client, tmp_path):
     )
     assert report.uncategorized == 0
     assert report.image_failures == 0
-    assert report.image_gap_handles == ["2win"]
-    assert calls == ["https://cdn.example.com/a.jpg"]
+    assert report.image_gap_handles == []
+    assert calls == [
+        "https://cdn.example.com/a.jpg",
+        "https://cdn.example.com/b.jpg",
+        "https://cdn.example.com/win.jpg",
+    ]
     assert (tmp_path / "shopify" / "efc-2600" / "0.jpg").read_bytes() == b"img"
+    assert (tmp_path / "shopify" / "efc-2600" / "1.jpg").read_bytes() == b"img"
 
     headers = admin_headers(client)
     categories = client.get("/api/admin/categories", headers=headers).json()
@@ -168,15 +305,29 @@ def test_import_writes_tree_products_brands_and_images(client, tmp_path):
     by_handle = {p["slug"]: p for p in products}
     imported = by_handle["efc-2600"]
     assert imported["orderable"] is False
-    assert imported["description"] == "Retinal camera."
+    assert imported["description"] == "Retinal camera with widefield optics."
+    assert imported["description_html"] == (
+        "<p>Retinal <b>camera</b> with <strong>widefield</strong> optics.</p>"
+    )
+    assert imported["images"] == [
+        "http://localhost:8000/media/shopify/efc-2600/0.jpg",
+        "http://localhost:8000/media/shopify/efc-2600/1.jpg",
+    ]
+    assert imported["image_alt"] == ["Ezer EFC-2600, front", "Ezer EFC-2600"]
+    assert imported["specifications"] == [
+        {"key": "Resolution", "value": "10M"},
+        {"key": "Available options", "value": "Frame, Headband"},
+    ]
     assert imported["category_id"] == autorefractors["id"]
     assert imported["brand_id"] is not None
-    assert imported["images"] == ["http://localhost:8000/media/shopify/efc-2600/0.jpg"]
 
     win = by_handle["2win"]
     assert win["brand_id"] is None
     assert win["category_id"] == exam["id"]
-    assert win["images"] == []
+    assert win["images"] == ["http://localhost:8000/media/shopify/2win/0.jpg"]
+    assert win["image_alt"] == ["2WIN compact fundus camera"]
+    assert win["description_html"] == ""
+    assert win["specifications"] == []
 
 
 def test_import_is_idempotent_and_force_replaces(client, tmp_path):
