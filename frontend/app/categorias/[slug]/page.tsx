@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import CatalogListing from "../../components/CatalogListing";
 import {
   fetchCategories,
   fetchProducts,
   fetchVisitorCurrency,
-  type Facet,
+  type CategoryFacet,
 } from "../../lib/api";
+import { buildCategoryTree } from "../../lib/categories";
 import { getDictionary, getLocale } from "../../lib/i18n";
 import { pageMetadata } from "../../lib/metadata";
 
@@ -20,7 +22,7 @@ export async function generateMetadata({
   const locale = getLocale();
   const t = getDictionary(locale);
   const page = t.pages.catalog;
-  let categories: Facet[] = [];
+  let categories: CategoryFacet[] = [];
   try {
     categories = await fetchCategories();
   } catch {
@@ -50,13 +52,46 @@ export default async function CategoriaPage({
   params: { slug: string };
   searchParams: { page?: string };
 }) {
-  const pageNumber = Math.max(1, Number(searchParams.page) || 1);
   let categories;
+  try {
+    categories = await fetchCategories();
+  } catch {
+    notFound();
+  }
+  const tree = buildCategoryTree(categories);
+  const nodes = [...tree, ...tree.flatMap((node) => node.children)];
+  const category = nodes.find((node) => node.slug === params.slug);
+  if (!category) {
+    notFound();
+  }
+
+  if (category.children.length > 0) {
+    return (
+      <main className="mx-auto max-w-6xl px-8 py-8">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          {category.name}
+        </h1>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {category.children.map((child) => (
+            <Link
+              key={child.slug}
+              href={`/categorias/${child.slug}`}
+              data-testid="child-category-link"
+              className="rounded-xl border border-slate-200 bg-white p-6 text-sm font-medium text-slate-900 transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+            >
+              {child.name}
+            </Link>
+          ))}
+        </div>
+      </main>
+    );
+  }
+
+  const pageNumber = Math.max(1, Number(searchParams.page) || 1);
   let page;
   let currency;
   try {
-    [categories, page, currency] = await Promise.all([
-      fetchCategories(),
+    [page, currency] = await Promise.all([
       fetchProducts(
         new URLSearchParams({
           category: params.slug,
@@ -67,10 +102,6 @@ export default async function CategoriaPage({
       fetchVisitorCurrency(),
     ]);
   } catch {
-    notFound();
-  }
-  const category = categories.find((facet) => facet.slug === params.slug);
-  if (!category) {
     notFound();
   }
 

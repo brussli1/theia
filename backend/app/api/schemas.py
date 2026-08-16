@@ -48,6 +48,7 @@ class Facet(BaseModel):
 
 
 class CategoryFacet(Facet):
+    id: int
     parent_id: int | None = None
 
 

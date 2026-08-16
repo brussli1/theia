@@ -13,14 +13,14 @@ router = APIRouter(tags=["catalog"])
 async def list_categories(db: AsyncSession = Depends(get_db)) -> list[CategoryFacet]:
     rows = (
         await db.execute(
-            select(Category.slug, Category.name, Category.parent_id).order_by(
+            select(Category.id, Category.slug, Category.name, Category.parent_id).order_by(
                 Category.name
             )
         )
     ).all()
     return [
-        CategoryFacet(slug=slug, name=name, parent_id=parent_id)
-        for slug, name, parent_id in rows
+        CategoryFacet(id=id_, slug=slug, name=name, parent_id=parent_id)
+        for id_, slug, name, parent_id in rows
     ]
 
 

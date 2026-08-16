@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { fetchCart, fetchCategories, fetchCurrentUser, type Facet } from "../lib/api";
+import { fetchCart, fetchCategories, fetchCurrentUser, type CategoryFacet } from "../lib/api";
+import { buildCategoryTree } from "../lib/categories";
 import { getDictionary, getLocale } from "../lib/i18n";
+import CategoryMenu from "./CategoryMenu";
 import LocaleSwitcher from "./LocaleSwitcher";
 import NavLink from "./NavLink";
 
 export default async function Header() {
   const locale = getLocale();
   const t = getDictionary(locale);
-  let categories: Facet[] = [];
+  let categories: CategoryFacet[] = [];
   try {
     categories = await fetchCategories();
   } catch {
@@ -35,11 +37,7 @@ export default async function Header() {
         </Link>
         <nav className="flex flex-wrap items-center gap-x-5 gap-y-1">
           <NavLink href="/productos">{t.header.products}</NavLink>
-          {categories.map((category) => (
-            <NavLink key={category.slug} href={`/categorias/${category.slug}`}>
-              {category.name}
-            </NavLink>
-          ))}
+          <CategoryMenu tree={buildCategoryTree(categories)} />
           <NavLink href="/cotizacion">{t.header.quotes}</NavLink>
           <NavLink href="/usados">{t.pages.footer.used}</NavLink>
           <NavLink href="/alquiler">{t.pages.footer.rentals}</NavLink>

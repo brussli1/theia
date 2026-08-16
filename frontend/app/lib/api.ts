@@ -6,6 +6,11 @@ export type Facet = {
   name: string;
 };
 
+export type CategoryFacet = Facet & {
+  id: number;
+  parent_id: number | null;
+};
+
 export type ProductCard = {
   id: number;
   slug: string;
@@ -99,12 +104,12 @@ export async function fetchCurrency(forwardedFor?: string | null): Promise<Curre
   }
 }
 
-export async function fetchCategories(): Promise<Facet[]> {
+export async function fetchCategories(): Promise<CategoryFacet[]> {
   const response = await fetch(`${BACKEND_URL}/api/categories`, { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Categories request failed: ${response.status}`);
   }
-  return (await response.json()) as Facet[];
+  return (await response.json()) as CategoryFacet[];
 }
 
 export type CartItem = {
