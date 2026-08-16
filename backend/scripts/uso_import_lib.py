@@ -335,7 +335,11 @@ _VOID_TAGS = {"br", "img", "hr", "meta", "link", "input", "source", "track", "co
 
 def _safe_href(href: str) -> str | None:
     href = href.strip()
-    if href.startswith("/") or href.startswith("http://") or href.startswith("https://"):
+    # A local path, or an absolute http(s) URL. Scheme-relative URLs
+    # ("//host/...") and every other scheme (javascript:, data:) are rejected.
+    if href.startswith("/") and not href.startswith("//"):
+        return href
+    if href.startswith("http://") or href.startswith("https://"):
         return href
     return None
 
@@ -360,6 +364,11 @@ class _DescriptionSanitizer(HTMLParser):
         if self.drop_depth:
             if tag not in _VOID_TAGS:
                 self.drop_depth += 1
+                # Guard against unbalanced source markup (an unclosed table or
+                # iris block): past this depth the drop is treated as closed
+                # so the rest of the fragment is not swallowed.
+                if self.drop_depth > 64:
+                    self.drop_depth = 0
             return
         attr_map = {key: (value or "") for key, value in attrs}
         if attr_map.get("id", "").startswith("iris-"):

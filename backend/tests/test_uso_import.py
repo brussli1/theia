@@ -103,6 +103,27 @@ def test_sanitize_description_html_escapes_text_and_filters_links():
     assert lib.sanitize_description_html("") == ""
 
 
+def test_sanitize_description_html_rejects_scheme_relative_and_internal_links():
+    html = (
+        '<a href="//evil.example/x">scheme-relative</a>'
+        '<a href="/collections/binocularloupes">local</a>'
+        '<a href="data:text/html,x">data</a>'
+    )
+    out = lib.sanitize_description_html(html)
+    assert '<a href="//evil.example"' not in out
+    assert "scheme-relative" in out  # the link text survives, the href does not
+    assert '<a href="/collections/binocularloupes" rel="noopener">local</a>' in out
+    assert "data:text" not in out
+
+
+def test_sanitize_description_html_survives_unbalanced_drops():
+    # Pathological unbalanced markup (an unclosed table followed by a flood of
+    # unclosed tags) must not swallow the rest of the fragment: past a bounded
+    # drop depth the drop is treated as closed.
+    html = "<p>Lead.</p><table><tr><td>open" + "<div>" * 70 + "<p>Tail.</p>"
+    assert lib.sanitize_description_html(html) == "<p>Lead.</p><p>Tail.</p>"
+
+
 def test_clean_alt_takes_first_pipe_segment_and_normalizes():
     assert lib.clean_alt("Ezer ERK-770, , Autorefractor | Ezer, US Ophthalmic | more") == (
         "Ezer ERK-770, Autorefractor"
@@ -357,3 +378,12 @@ def test_import_is_idempotent_and_force_replaces(client, tmp_path):
     headers = admin_headers(client)
     products = client.get("/api/admin/products", headers=headers).json()
     assert len(products) == 2
+    # The force path must preserve the content-fidelity fields.
+    by_slug = {p["slug"]: p for p in products}
+    efc = by_slug["efc-2600"]
+    assert efc["description_html"].startswith("<p>Retinal <b>camera</b>")
+    assert efc["image_alt"] == ["Ezer EFC-2600, front", "Ezer EFC-2600"]
+    assert efc["specifications"] == [
+        {"key": "Resolution", "value": "10M"},
+        {"key": "Available options", "value": "Frame, Headband"},
+    ]
