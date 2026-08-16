@@ -216,11 +216,14 @@ def build_category_plan(menu: list[MenuNode]) -> CategoryPlan:
                 found.append(node)
         return found
 
-    leaf_slug_order: list[str] = []
-    for node in collect_leaves(menu):
+    # A handle that appears in several places in the menu (e.g. "biometer"
+    # under both Specialized and Surgical) maps to ONE category; the later
+    # leaves become menu aliases sharing the first leaf's slug.
+    leaves = collect_leaves(menu)
+    for node in leaves:
         slug = unique_slug(node.handle, taken)
-        leaf_slug_order.append(slug)
         leaf_slugs.setdefault(node.handle, slug)
+    leaf_slug_order = [leaf_slugs[node.handle] for node in leaves]
 
     leaf_index = 0
 
@@ -332,3 +335,5 @@ class ImportReport:
     image_failures: int
     skipped_existing: bool = False
     uncategorized_handles: list[str] = field(default_factory=list)
+    image_gap_count: int = 0
+    image_gap_handles: list[str] = field(default_factory=list)

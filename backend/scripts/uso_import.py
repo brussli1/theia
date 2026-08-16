@@ -21,10 +21,12 @@ from pathlib import Path
 from typing import Callable
 
 import httpx
-from sqlalchemy import delete, select, text
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.core.config import settings
+from app.core.database import sync_sequences
+from app.core.media import build_media_url
 from app.models.catalog import Brand, Category, Product
 from scripts.uso_import_lib import (
     USO_MENU,
@@ -45,10 +47,6 @@ BASE_URL = "https://usophthalmic.com"
 Download = Callable[[list[tuple[str, Path]]], set[int]]
 
 
-def media_url_for(relpath: Path) -> str:
-    return f"{settings.media_url.rstrip('/')}/media/{relpath.as_posix()}"
-
-
 async def _import_catalog(
     inventory: dict,
     membership: dict[int, list[str]],
@@ -56,6 +54,7 @@ async def _import_catalog(
     download: Download,
     force: bool,
     menu: list | None = None,
+    state_file: Path | None = None,
 ) -> ImportReport:
     plan = build_category_plan(menu if menu is not None else USO_MENU)
     plan_slugs = {row.slug for row in plan.rows}
@@ -64,9 +63,10 @@ async def _import_catalog(
 
     engine = create_async_engine(settings.database_url)
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
-    state_file = Path("uso_import_state.json")
     previous_state: dict = (
-        json.loads(state_file.read_text()) if state_file.exists() else {}
+        json.loads(state_file.read_text())
+        if state_file is not None and state_file.exists()
+        else {}
     )
     try:
         async with session_factory() as db:
@@ -97,8 +97,11 @@ async def _import_catalog(
             taken_slugs = set((await db.execute(select(Product.slug))).scalars())
 
             # Categories: rows are parent-first; resolve slug -> id as we go.
+            # Rows may repeat a slug (menu aliases share one category).
             category_ids: dict[str, int] = {}
             for row in plan.rows:
+                if row.slug in category_ids:
+                    continue
                 category = Category(
                     name=row.name,
                     slug=row.slug,
@@ -125,6 +128,7 @@ async def _import_catalog(
 
             uncategorized = 0
             uncategorized_handles: list[str] = []
+            image_gap_handles: list[str] = []
             imported = 0
 
             pending_downloads: list[tuple[str, Path]] = []
@@ -154,10 +158,12 @@ async def _import_catalog(
                 if category_slug is None:
                     uncategorized += 1
                     uncategorized_handles.append(handle)
+                if not product.get("images"):
+                    image_gap_handles.append(handle)
 
                 vendor_brand = brand_from_vendor(product["vendor"])
                 images = [
-                    media_url_for(relpath)
+                    build_media_url(relpath)
                     for index, relpath in entries
                     if index not in failed_downloads
                 ]
@@ -182,34 +188,29 @@ async def _import_catalog(
 
             await db.commit()
 
-            for table in ("products", "categories", "brands"):
-                await db.execute(
-                    text(
-                        f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
-                        f"(SELECT COALESCE(MAX(id), 1) FROM {table}))"
-                    )
-                )
+            await sync_sequences(db, "products", "categories", "brands")
             await db.commit()
 
-            state_file.write_text(
-                json.dumps(
-                    {
-                        "product_slugs": sorted(
-                            inventory_slugs
-                        ),
-                        "category_slugs": sorted(plan_slugs),
-                    }
+            if state_file is not None:
+                state_file.write_text(
+                    json.dumps(
+                        {
+                            "product_slugs": sorted(inventory_slugs),
+                            "category_slugs": sorted(plan_slugs),
+                        }
+                    )
                 )
-            )
 
             return ImportReport(
                 imported_products=imported,
-                imported_categories=len(plan.rows),
+                imported_categories=len({row.slug for row in plan.rows}),
                 imported_brands=len(brand_ids),
                 uncategorized=uncategorized,
                 image_failures=image_failures,
                 skipped_existing=False,
                 uncategorized_handles=uncategorized_handles,
+                image_gap_count=len(image_gap_handles),
+                image_gap_handles=image_gap_handles,
             )
     finally:
         await engine.dispose()
@@ -269,6 +270,7 @@ def main() -> int:
             media_dir=Path(settings.media_dir),
             download=download,
             force=args.force,
+            state_file=Path("uso_import_state.json"),
         )
     )
 
@@ -279,6 +281,12 @@ def main() -> int:
           f"({report.uncategorized} without a menu category)")
     print(f"Imported {report.imported_categories} categories, {report.imported_brands} brands")
     print(f"Image download failures: {report.image_failures}")
+    print(f"Products without source images: {report.image_gap_count}")
+    if report.image_gap_handles:
+        Path("uso_imageless.json").write_text(
+            json.dumps(report.image_gap_handles, indent=2)
+        )
+        print("Image-less products written to uso_imageless.json")
     print(f"Collections that failed to crawl: {membership_failures}")
     if failed_handles:
         print(f"Failed collection handles: {', '.join(failed_handles)}")
@@ -286,7 +294,7 @@ def main() -> int:
         Path("uso_uncategorized.json").write_text(
             json.dumps(report.uncategorized_handles, indent=2)
         )
-        print(f"Uncategorized products written to uso_uncategorized.json")
+        print("Uncategorized products written to uso_uncategorized.json")
     return 0
 
 

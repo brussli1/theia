@@ -22,13 +22,13 @@ TINY_MENU = [
 ]
 
 
-def test_build_category_plan_dedupes_handles_and_orders_parents_first():
+def test_build_category_plan_aliases_duplicate_handles_and_orders_parents_first():
     plan = lib.build_category_plan(TINY_MENU)
     slugs = [row.slug for row in plan.rows]
-    assert len(set(slugs)) == len(slugs)
+    assert len(set(slugs)) == len(plan.rows) - 1  # the second biometer is an alias
 
     biometer_rows = [row for row in plan.rows if row.handle == "biometer"]
-    assert sorted(row.slug for row in biometer_rows) == ["biometer", "biometer-2"]
+    assert [row.slug for row in biometer_rows] == ["biometer", "biometer"]
     assert plan.leaf_slugs["biometer"] == "biometer"
 
     autorefractor_row = next(row for row in plan.rows if row.handle == "autorefractors")
@@ -148,9 +148,12 @@ def test_import_writes_tree_products_brands_and_images(client, tmp_path):
         _import_catalog(_inventory(), membership, tmp_path, download, force=False, menu=TINY_MENU)
     )
     assert report.imported_products == 2
-    assert report.imported_categories == len(lib.build_category_plan(TINY_MENU).rows)
+    assert report.imported_categories == len(
+        {row.slug for row in lib.build_category_plan(TINY_MENU).rows}
+    )
     assert report.uncategorized == 0
     assert report.image_failures == 0
+    assert report.image_gap_handles == ["2win"]
     assert calls == ["https://cdn.example.com/a.jpg"]
     assert (tmp_path / "shopify" / "efc-2600" / "0.jpg").read_bytes() == b"img"
 

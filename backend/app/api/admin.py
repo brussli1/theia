@@ -14,7 +14,6 @@ confirms its pending payment — the manual path for Western Union transfers.
 
 import re
 import unicodedata
-from pathlib import Path
 from typing import Literal
 from uuid import uuid4
 
@@ -39,8 +38,8 @@ from app.api.schemas import (
     AdminQuoteOut,
     AdminQuoteStatusIn,
 )
-from app.core.config import settings
 from app.core.database import get_db
+from app.core.media import build_media_url, ensure_media_dir
 from app.models.catalog import Brand, Category, Product
 from app.models.collections import Collection, CollectionProduct
 from app.models.order import (
@@ -371,11 +370,10 @@ async def upload_image(file: UploadFile = File(...)) -> dict:
     data = await file.read()
     if len(data) > MAX_IMAGE_BYTES:
         raise HTTPException(status_code=422, detail="image larger than 5MB")
-    media_dir = Path(settings.media_dir)
-    media_dir.mkdir(parents=True, exist_ok=True)
+    media_dir = ensure_media_dir()
     filename = f"{uuid4().hex}{extension}"
     (media_dir / filename).write_bytes(data)
-    return {"url": f"{settings.media_url.rstrip('/')}/media/{filename}"}
+    return {"url": build_media_url(filename)}
 
 
 # --- Orders ---

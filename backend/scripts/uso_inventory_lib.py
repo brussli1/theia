@@ -1,15 +1,17 @@
-"""Parsing and reporting helpers for the US Ophthalmic (Shopify) catalog crawl.
+"""Parsing, reporting and throttled fetching for the US Ophthalmic (Shopify)
+catalog crawl.
 
-Pure functions over the public Shopify JSON shapes; the network loop is kept
-thin and injectable so tests never touch the network.
+Parsing/reporting helpers are pure functions over the public Shopify JSON
+shapes; the network loop stays injectable so tests never touch the network.
 """
 
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-import httpx
 import time
+
+import httpx
 
 MAX_PAGES = 200
 
@@ -35,7 +37,6 @@ def fetch_with_backoff(
             return response.json()
         assert response is not None
         response.raise_for_status()
-        raise RuntimeError("unreachable")
 
     return fetch
 
@@ -134,9 +135,10 @@ def parse_collections_page(raw: dict) -> list[Collection]:
 def fetch_items(
     get_json: Callable[[str], dict], path: str, item_key: str, limit: int = 250
 ) -> list[Any]:
-    """Paginates a Shopify JSON list endpoint until an empty page.
+    """Paginates a Shopify JSON list endpoint until a page shorter than the
+    limit signals the end.
 
-    `get_json(url)` is the injected fetcher (httpx in the CLI, a dict in
+    `get_json(url)` is the injected fetcher (httpx in the CLIs, a dict in
     tests). Raises RuntimeError if the very first page is empty (a broken
     store or wrong path must fail loudly, not produce a silent empty
     inventory) or if pagination never terminates.
