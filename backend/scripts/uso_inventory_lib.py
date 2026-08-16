@@ -8,7 +8,36 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+import httpx
+import time
+
 MAX_PAGES = 200
+
+
+def fetch_with_backoff(
+    client: httpx.Client,
+    base: str,
+    retries: int = 5,
+    delay: float = 0.25,
+) -> Callable[[str], dict]:
+    """A get_json for Shopify's public endpoints: throttles requests and
+    retries 429 responses with a growing pause."""
+
+    def fetch(url: str) -> dict:
+        response = None
+        for attempt in range(retries):
+            response = client.get(f"{base}{url}", timeout=30)
+            if response.status_code == 429:
+                time.sleep(delay * (attempt + 1))
+                continue
+            response.raise_for_status()
+            time.sleep(delay)
+            return response.json()
+        assert response is not None
+        response.raise_for_status()
+        raise RuntimeError("unreachable")
+
+    return fetch
 
 
 @dataclass
@@ -20,6 +49,7 @@ class Variant:
 
 @dataclass
 class Product:
+    id: int
     title: str
     handle: str
     vendor: str
@@ -70,6 +100,7 @@ def parse_products_page(raw: dict) -> list[Product]:
 
 def parse_product(raw: dict) -> Product:
     return Product(
+        id=int(raw.get("id") or 0),
         title=raw.get("title") or "",
         handle=raw.get("handle") or "",
         vendor=raw.get("vendor") or "",
@@ -120,6 +151,8 @@ def fetch_items(
                 raise RuntimeError(f"first page of {path} came back empty")
             return items
         items.extend(batch)
+        if len(batch) < limit:
+            return items
         page += 1
     raise RuntimeError(f"{path} did not terminate within {MAX_PAGES} pages")
 

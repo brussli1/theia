@@ -79,11 +79,10 @@ def test_variantless_product_is_unpriced():
     assert report.unpriced_count == 1
 
 
-def test_fetch_items_paginates_until_empty():
+def test_fetch_items_paginates_until_short_page():
     pages = {
         "/products.json?limit=2&page=1": {"products": ["a", "b"]},
         "/products.json?limit=2&page=2": {"products": ["c"]},
-        "/products.json?limit=2&page=3": {"products": []},
     }
     calls = []
 
@@ -96,7 +95,6 @@ def test_fetch_items_paginates_until_empty():
     assert calls == [
         "/products.json?limit=2&page=1",
         "/products.json?limit=2&page=2",
-        "/products.json?limit=2&page=3",
     ]
 
 
@@ -110,5 +108,5 @@ def test_fetch_items_fails_loudly_on_empty_first_page():
 def test_fetch_items_fails_when_pagination_never_terminates():
     with pytest.raises(RuntimeError, match="did not terminate"):
         lib.fetch_items(
-            lambda url: {"products": ["x"]}, "/products.json", item_key="products"
+            lambda url: {"products": ["x", "y"]}, "/products.json", item_key="products", limit=2
         )

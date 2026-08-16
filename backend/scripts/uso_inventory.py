@@ -11,27 +11,18 @@ import argparse
 import json
 from dataclasses import asdict
 from pathlib import Path
-from typing import Callable
 
 import httpx
 
 from scripts.uso_inventory_lib import (
     build_report,
     fetch_items,
+    fetch_with_backoff,
     parse_collections_page,
     parse_products_page,
 )
 
 BASE_URL = "https://usophthalmic.com"
-
-
-def get_json(client: httpx.Client, base: str) -> Callable:
-    def fetch(url: str) -> dict:
-        response = client.get(f"{base}{url}", timeout=30)
-        response.raise_for_status()
-        return response.json()
-
-    return fetch
 
 
 def main() -> int:
@@ -40,7 +31,7 @@ def main() -> int:
     args = parser.parse_args()
 
     with httpx.Client(follow_redirects=True) as client:
-        fetch = get_json(client, BASE_URL)
+        fetch = fetch_with_backoff(client, BASE_URL)
         raw_products = fetch_items(fetch, "/products.json", "products")
         raw_collections = fetch_items(fetch, "/collections.json", "collections")
 
