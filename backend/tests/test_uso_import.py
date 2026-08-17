@@ -387,3 +387,29 @@ def test_import_is_idempotent_and_force_replaces(client, tmp_path):
         {"key": "Resolution", "value": "10M"},
         {"key": "Available options", "value": "Frame, Headband"},
     ]
+
+
+def test_patch_inventory_attaches_verified_sourced_images_only():
+    from scripts.uso_fill_images import patch_inventory
+
+    products = [
+        {"handle": "gap-1", "title": "Gap One", "images": []},
+        {"handle": "has-image", "title": "Has Image", "images": ["https://cdn.example.com/a.jpg"]},
+        {"handle": "unverified", "title": "Unverified", "images": []},
+        {"handle": "no-entry", "title": "No Entry", "images": []},
+    ]
+    sourcing = {
+        "gap-1": {"verified": True, "image_url": "https://cdn.example.com/gap1.jpg", "alt": "Gap One alt"},
+        "unverified": {"verified": False, "image_url": "https://cdn.example.com/u.jpg", "alt": "U"},
+    }
+
+    patched, handles = patch_inventory(products, sourcing)
+
+    assert handles == ["gap-1"]
+    assert patched[0]["images"] == ["https://cdn.example.com/gap1.jpg"]
+    assert patched[0]["image_alts"] == ["Gap One alt"]
+    assert patched[1] is products[1]
+    assert patched[2]["images"] == []
+    assert patched[3]["images"] == []
+    # The source list is mutated in place so the inventory file write sees it.
+    assert products[0]["images"] == ["https://cdn.example.com/gap1.jpg"]
