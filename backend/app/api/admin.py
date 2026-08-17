@@ -119,6 +119,7 @@ def _product_out(product: Product, brand_name: str | None, category_name: str | 
         images=product.images,
         image_alt=product.image_alt if isinstance(product.image_alt, list) else [],
         specifications=specifications,
+        cross_links=product.cross_links or None,
         category_id=product.category_id,
         brand_id=product.brand_id,
         category_name=category_name,

@@ -68,6 +68,9 @@ def seed_products():
         # The specifications JSONB column must be adapted as JSON: the default
         # list adapter turns an empty list into an empty jsonb *object* ({}).
         adapted[12] = psycopg2.extras.Json(adapted[12])
+        # cross_links is JSONB and nullable; wrap it so dicts become objects
+        # and None becomes jsonb null.
+        adapted[13] = psycopg2.extras.Json(adapted[13])
         return adapted
 
     with _connect() as conn:
@@ -85,8 +88,8 @@ def seed_products():
                 INSERT INTO products
                     (id, name, slug, description, description_html, image_alt,
                      price_gs, price_usd, available, orderable, certifications,
-                     images, specifications, category_id, brand_id, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     images, specifications, cross_links, category_id, brand_id, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 [_adapt(row) for row in PRODUCTS],
             )

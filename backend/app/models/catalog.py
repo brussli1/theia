@@ -68,6 +68,11 @@ class Product(Base):
     # index 0 = hero (D8).
     image_alt: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     specifications: Mapped[list[dict]] = mapped_column(JSONB, default=list)
+    # Cross-links extracted from the source's #iris-* blocks (D3):
+    # related_categories (slugs), related_products (slugs),
+    # related_articles (blog handles). Written only by the USO import;
+    # null when the product has none.
+    cross_links: Mapped[dict | None] = mapped_column(JSONB, default=None, nullable=True)
     category_id: Mapped[int | None] = mapped_column(
         ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
     )

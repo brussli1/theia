@@ -48,3 +48,19 @@ test("listing card links to the PDP", async ({ page }) => {
   await page.getByText("High Performance Digital Imaging System VK-2s").click();
   await expect(page).toHaveURL(/\/productos\/high-performance-digital-imaging-system-vk-2s$/);
 });
+
+test("related section renders cross-links to existing targets", async ({ page }) => {
+  await page.goto("/productos/high-performance-digital-imaging-system-vk-2s");
+  const section = page.getByTestId("related-section");
+  await expect(section).toBeVisible();
+  await expect(section).toContainText("Relacionados");
+  const category = section.getByRole("link", { name: "Auto-refractores" });
+  await expect(category).toHaveAttribute("href", "/categorias/auto-refractores");
+  const product = section.getByRole("link", { name: "HHOU 7040 Refraction Units" });
+  await expect(product).toHaveAttribute("href", "/productos/hhou-7040-refraction-units");
+});
+
+test("no related section when the product has no cross-links", async ({ page }) => {
+  await page.goto("/productos/kowa-vk-90-fundus-camera");
+  await expect(page.getByTestId("related-section")).toHaveCount(0);
+});

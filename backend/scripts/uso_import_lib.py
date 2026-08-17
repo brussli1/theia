@@ -551,6 +551,45 @@ def available_options(product: dict) -> str | None:
     return ", ".join(values) if values else None
 
 
+# Cross-link URL shapes inside the #iris-* blocks (D3): categories, products
+# and buyer-guide articles. The quote CTA (/pages/get-a-quote) and any other
+# path shapes are not cross-links and are dropped.
+_CROSS_LINK_KINDS = (
+    ("related_categories", "/collections/"),
+    ("related_products", "/products/"),
+    ("related_articles", "/blogs/articles/"),
+)
+
+
+def extract_cross_links(html: str) -> dict:
+    """Slugs and handles from the source's #iris-related / #iris-compare
+    cross-link blocks (D3): {related_categories, related_products,
+    related_articles}, each deduplicated in source order. Returns all three
+    keys (possibly empty) so the PDP can decide from presence."""
+    if not html:
+        return {"related_categories": [], "related_products": [], "related_articles": []}
+    result: dict[str, list[str]] = {
+        "related_categories": [],
+        "related_products": [],
+        "related_articles": [],
+    }
+    blocks = re.findall(
+        r'<div[^>]*id="iris-related".*?</div>|<p[^>]*id="iris-compare"[^>]*>.*?</p>',
+        html,
+        re.S,
+    )
+    for block in blocks:
+        for href in re.findall(r'href=["\']([^"\']+)["\']', block):
+            href = href.strip()
+            for key, prefix in _CROSS_LINK_KINDS:
+                if href.startswith(prefix):
+                    value = re.split(r"[?#]", href[len(prefix):])[0].strip()
+                    if value and value not in result[key]:
+                        result[key].append(value)
+                    break
+    return result
+
+
 def image_extension(url: str) -> str:
     match = re.search(r"\.(jpe?g|png|webp|gif)(\?|$)", url.lower())
     return f".{match.group(1)}" if match else ".jpg"

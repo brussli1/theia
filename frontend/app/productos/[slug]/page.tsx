@@ -120,9 +120,75 @@ export default async function ProductoPage({
               </dl>
             </div>
           )}
+          <RelatedSection
+            crossLinks={product.cross_links}
+            t={t.product}
+          />
         </div>
       </div>
     </main>
+  );
+}
+
+/** Related section from the source's cross-link data (D3). Only links whose
+ * target exists in Theia are returned by the API, so the section renders
+ * solely when there is something to link to. */
+function RelatedSection({
+  crossLinks,
+  t,
+}: {
+  crossLinks: import("../../lib/api").ProductCrossLinks;
+  t: {
+    related: string;
+    relatedCategories: string;
+    relatedProducts: string;
+  };
+}) {
+  const categories = crossLinks.related_categories;
+  const products = crossLinks.related_products;
+  if (categories.length === 0 && products.length === 0) {
+    return null;
+  }
+  return (
+    <div className="mt-6" data-testid="related-section">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        {t.related}
+      </h2>
+      {categories.length > 0 && (
+        <div className="mt-2">
+          <p className="text-xs font-medium text-slate-500">{t.relatedCategories}</p>
+          <ul className="mt-1 flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <li key={category.slug}>
+                <Link
+                  href={`/categorias/${category.slug}`}
+                  className="rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50"
+                >
+                  {category.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {products.length > 0 && (
+        <div className="mt-2">
+          <p className="text-xs font-medium text-slate-500">{t.relatedProducts}</p>
+          <ul className="mt-1 space-y-1">
+            {products.map((product) => (
+              <li key={product.slug}>
+                <Link
+                  href={`/productos/${product.slug}`}
+                  className="text-sm font-medium text-brand-700 hover:underline"
+                >
+                  {product.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 

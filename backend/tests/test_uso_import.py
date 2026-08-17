@@ -201,6 +201,72 @@ def test_available_options_uses_named_options_then_falls_back_to_variant_titles(
     assert lib.available_options({}) is None
 
 
+IRIS_RELATED = """
+<div id="iris-related" data-iris="v2">
+<p style="font-weight:700;">Related equipment &amp; resources</p>
+<p><strong>Browse related categories:</strong> <a href="/collections/autorefractors">Autorefractors</a>, <a href="/collections/surgical">Surgical</a>.</p>
+<p><strong>Compare related models:</strong> <a href="/products/erk-bh">ERK-BH</a>, <a href="/products/erk-h">ERK-H</a>.</p>
+<p><strong>Read next:</strong> <a href="/blogs/articles/understanding-the-importance-of-autorefractors">Understanding the importance of Autorefractors</a>.</p>
+<p>Backed by US Ophthalmic <a href="/pages/get-a-quote">Request a quote →</a></p>
+</div>
+"""
+
+IRIS_COMPARE = """
+<p id="iris-compare">📊 <strong>Compare:</strong> <a href="/blogs/articles/best-autorefractor-keratometers-ark-for-2026">Buyer's guide →</a></p>
+"""
+
+
+def test_extract_cross_links_parses_iris_blocks_by_kind():
+    html = IRIS_RELATED + IRIS_COMPARE
+    assert lib.extract_cross_links(html) == {
+        "related_categories": ["autorefractors", "surgical"],
+        "related_products": ["erk-bh", "erk-h"],
+        "related_articles": [
+            "understanding-the-importance-of-autorefractors",
+            "best-autorefractor-keratometers-ark-for-2026",
+        ],
+    }
+
+
+def test_extract_cross_links_drops_quote_cta_and_foreign_shapes():
+    html = (
+        '<p id="iris-compare"><a href="/pages/get-a-quote">quote</a></p>'
+        '<div id="iris-related"><a href="https://external.example.com/x">out</a>'
+        '<a href="/products/erk-bh">dup</a></div>'
+    )
+    assert lib.extract_cross_links(html) == {
+        "related_categories": [],
+        "related_products": ["erk-bh"],
+        "related_articles": [],
+    }
+
+
+def test_extract_cross_links_dedupes_and_strips_query_fragments():
+    html = (
+        '<div id="iris-related"><a href="/products/erk-bh">a</a>'
+        '<a href="/products/erk-bh?v=2">b</a>'
+        '<a href="/collections/ezer#top">c</a></div>'
+    )
+    assert lib.extract_cross_links(html) == {
+        "related_categories": ["ezer"],
+        "related_products": ["erk-bh"],
+        "related_articles": [],
+    }
+
+
+def test_extract_cross_links_empty_input_returns_three_empty_lists():
+    assert lib.extract_cross_links("") == {
+        "related_categories": [],
+        "related_products": [],
+        "related_articles": [],
+    }
+    assert lib.extract_cross_links("<p>no iris blocks here</p>") == {
+        "related_categories": [],
+        "related_products": [],
+        "related_articles": [],
+    }
+
+
 def test_image_destinations_build_relative_paths_and_extensions():
     destinations = lib.image_destinations(
         "efc-2600", ["https://cdn.example.com/a.JPG?v=1", "https://cdn.example.com/b"]
@@ -254,7 +320,13 @@ def _inventory() -> dict:
                     "<p>Retinal <b>camera</b> with <strong>widefield</strong> optics.</p>"
                     "<table><tr><td class=\"td1_table\">Resolution</td>"
                     "<td class=\"td2_table\">10M</td></tr></table>"
-                    "<div id=\"iris-related\"><p>Related equipment</p></div>"
+                    '<div id="iris-related">'
+                    '<p><strong>Browse related categories:</strong> '
+                    '<a href="/collections/autorefractors">Autorefractors</a>.</p>'
+                    '<p><strong>Compare related models:</strong> '
+                    '<a href="/products/2win">2WIN</a>.</p>'
+                    '<p><a href="/pages/get-a-quote">quote</a></p>'
+                    "</div>"
                 ),
                 "images": [
                     "https://cdn.example.com/a.jpg",
@@ -339,6 +411,11 @@ def test_import_writes_tree_products_brands_and_images(client, tmp_path):
         {"key": "Resolution", "value": "10M"},
         {"key": "Available options", "value": "Frame, Headband"},
     ]
+    assert imported["cross_links"] == {
+        "related_categories": ["autorefractors"],
+        "related_products": ["2win"],
+        "related_articles": [],
+    }
     assert imported["category_id"] == autorefractors["id"]
     assert imported["brand_id"] is not None
 

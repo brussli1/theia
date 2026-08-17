@@ -15,7 +15,7 @@ BRANDS = [
 
 # (id, name, slug, description, description_html, image_alt, price_gs,
 #  price_usd, available, orderable, certifications, images, specifications,
-#  category_id, brand_id, created_at)
+#  cross_links, category_id, brand_id, created_at)
 PRODUCTS = [
     (
         1,
@@ -37,6 +37,11 @@ PRODUCTS = [
             {"key": "Magnification", "value": "10x-16x"},
             {"key": "Camera", "value": "CCD"},
         ],
+        {
+            "related_categories": ["auto-refractores"],
+            "related_products": ["hhou-7040-refraction-units", "auto-refractor-huvitz-hrk-1"],
+            "related_articles": [],
+        },
         1,
         1,
         datetime(2024, 1, 10, tzinfo=timezone.utc),
@@ -57,6 +62,7 @@ PRODUCTS = [
         [
             {"key": "Type", "value": "Refraction unit"},
         ],
+        None,
         1,
         3,
         datetime(2024, 2, 10, tzinfo=timezone.utc),
@@ -78,6 +84,7 @@ PRODUCTS = [
             {"key": "Measurement range", "value": "-20D to +20D"},
             {"key": "Keratometry", "value": "Yes"},
         ],
+        None,
         2,
         2,
         datetime(2024, 3, 10, tzinfo=timezone.utc),
@@ -96,6 +103,7 @@ PRODUCTS = [
         ["ISO"],
         [],
         [],
+        None,
         1,
         1,
         datetime(2024, 4, 10, tzinfo=timezone.utc),

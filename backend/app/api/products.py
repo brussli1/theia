@@ -3,7 +3,14 @@ from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.cards import product_card
-from app.api.schemas import Facet, ProductCard, ProductDetail, ProductPage
+from app.api.schemas import (
+    CrossLinkRef,
+    Facet,
+    ProductCard,
+    ProductCrossLinks,
+    ProductDetail,
+    ProductPage,
+)
 from app.core.database import get_db
 from app.models.catalog import Brand, Category, Product
 
@@ -108,6 +115,31 @@ async def get_product(
         raise HTTPException(status_code=404, detail="Product not found")
 
     product, brand_name, category_name = row
+    cross_links = product.cross_links or {}
+    related_categories = cross_links.get("related_categories") or []
+    related_products = cross_links.get("related_products") or []
+    related_articles = cross_links.get("related_articles") or []
+
+    # Only links whose target exists in Theia's catalog render (D3): resolve
+    # each slug against the categories/products tables, preserving source order.
+    category_names = dict(
+        (
+            await db.execute(
+                select(Category.slug, Category.name).where(
+                    Category.slug.in_(related_categories)
+                )
+            )
+        ).all()
+    )
+    product_names = dict(
+        (
+            await db.execute(
+                select(Product.slug, Product.name).where(
+                    Product.slug.in_(related_products)
+                )
+            )
+        ).all()
+    )
     return ProductDetail(
         id=product.id,
         slug=product.slug,
@@ -119,6 +151,19 @@ async def get_product(
         images=product.images,
         image_alt=product.image_alt if isinstance(product.image_alt, list) else [],
         specifications=product.specifications,
+        cross_links=ProductCrossLinks(
+            related_categories=[
+                CrossLinkRef(slug=c, name=category_names[c])
+                for c in related_categories
+                if c in category_names
+            ],
+            related_products=[
+                CrossLinkRef(slug=p, name=product_names[p])
+                for p in related_products
+                if p in product_names
+            ],
+            related_articles=related_articles,
+        ),
         available=product.available,
         orderable=product.orderable,
         certifications=product.certifications,

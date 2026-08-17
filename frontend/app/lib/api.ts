@@ -40,6 +40,20 @@ export type Specification = {
   value: string;
 };
 
+export type CrossLinkRef = {
+  slug: string;
+  name: string;
+};
+
+/** Cross-links extracted from the source's #iris-* blocks (D3). Categories
+ * and products are resolved to targets that exist in Theia; articles are
+ * data only (no article pages yet). */
+export type ProductCrossLinks = {
+  related_categories: CrossLinkRef[];
+  related_products: CrossLinkRef[];
+  related_articles: string[];
+};
+
 export type ProductDetail = {
   id: number;
   slug: string;
@@ -54,6 +68,7 @@ export type ProductDetail = {
   /** Per-image alt text aligned with `images`; index 0 is the hero. */
   image_alt: string[];
   specifications: Specification[];
+  cross_links: ProductCrossLinks;
   available: boolean;
   orderable: boolean;
   certifications: string[];

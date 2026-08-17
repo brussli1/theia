@@ -36,6 +36,7 @@ from scripts.uso_import_lib import (
     brand_from_vendor,
     build_category_plan,
     clean_alt,
+    extract_cross_links,
     extract_specifications,
     fetch_collection_membership,
     html_to_text,
@@ -185,6 +186,10 @@ async def _import_catalog(
                 if options:
                     specifications.append({"key": "Available options", "value": options})
 
+                # The #iris-* cross-link blocks are dropped from the
+                # description (D1/D3); their links become data instead.
+                cross_links = extract_cross_links(product.get("body_html") or "")
+
                 # The plain description is the sanitized fragment flattened:
                 # iris marketing copy, tables and inline images never reach
                 # either field (D1/D2/D8).
@@ -206,6 +211,7 @@ async def _import_catalog(
                         images=images,
                         image_alt=image_alt,
                         specifications=specifications,
+                        cross_links=cross_links,
                         category_id=category_ids.get(category_slug),
                         brand_id=brand_ids.get(vendor_brand) if vendor_brand else None,
                     )

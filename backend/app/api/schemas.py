@@ -26,6 +26,21 @@ class Specification(BaseModel):
     value: str
 
 
+class CrossLinkRef(BaseModel):
+    slug: str
+    name: str
+
+
+class ProductCrossLinks(BaseModel):
+    # Resolved against Theia's catalog: only targets that exist are listed
+    # (D3 — a link renders only when the target exists in Theia).
+    related_categories: list[CrossLinkRef] = []
+    related_products: list[CrossLinkRef] = []
+    # Article handles from the source's buyer-guide links. Theia has no
+    # article pages, so these are data only — never rendered.
+    related_articles: list[str] = []
+
+
 class ProductDetail(BaseModel):
     id: int
     slug: str
@@ -41,6 +56,7 @@ class ProductDetail(BaseModel):
     # display order and index 0 is the hero.
     image_alt: list[str] = []
     specifications: list[Specification]
+    cross_links: ProductCrossLinks = Field(default_factory=ProductCrossLinks)
     available: bool
     orderable: bool
     certifications: list[str]
@@ -234,6 +250,8 @@ class AdminProductOut(BaseModel):
     images: list[str]
     image_alt: list[str] = []
     specifications: list[Specification]
+    # Cross-links extracted by the USO import; null when the product has none.
+    cross_links: dict | None = None
     category_id: int | None
     brand_id: int | None
     category_name: str | None
