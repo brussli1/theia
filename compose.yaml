@@ -1,40 +1,21 @@
+# Development database. Start it with `docker compose up -d`; the app itself
+# runs on the host with `npm run dev`. Production uses compose.prod.yaml.
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: theia
       POSTGRES_PASSWORD: theia
-      POSTGRES_DB: theia
+      POSTGRES_DB: theia_site
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U theia"]
+      test: ["CMD-SHELL", "pg_isready -U theia -d theia_site"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  backend:
-    build: ./backend
-    environment:
-      DATABASE_URL: postgresql+asyncpg://theia:theia@postgres:5432/theia
-      DATABASE_URL_SYNC: postgresql://theia:theia@postgres:5432/theia
-      ENVIRONMENT: development
-    ports:
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  frontend:
-    build: ./frontend
-    environment:
-      BACKEND_URL: http://backend:8000
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-
 volumes:
-  postgres_data:
+  db_data:
