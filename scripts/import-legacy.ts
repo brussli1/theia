@@ -17,6 +17,8 @@ import { JSDOM } from 'jsdom'
 import path from 'path'
 import { getPayload, type Payload } from 'payload'
 
+import { slugify } from '@/lib/slugify'
+
 type LegacyCategory = { id: number; name: string; slug: string; parent_id: number | null }
 type LegacyBrand = { id: number; name: string; slug: string }
 type LegacyProduct = {
@@ -68,8 +70,9 @@ function plainSummary(text: string | null): string | undefined {
   return (sentence > 80 ? cut.slice(0, sentence + 1) : `${cut.slice(0, cut.lastIndexOf(' '))}…`).trim()
 }
 
+/** Looks up by the normalized slug, since the slug field slugifies on save (e.g. `sd_card_software` is stored as `sd-card-software`). */
 async function findIdBySlug(payload: Payload, collection: 'brands' | 'categories' | 'products', slug: string) {
-  const { docs } = await payload.find({ collection, where: { slug: { equals: slug } }, limit: 1, depth: 0, draft: collection === 'products' })
+  const { docs } = await payload.find({ collection, where: { slug: { equals: slugify(slug) } }, limit: 1, depth: 0, draft: collection === 'products' })
   return docs[0]?.id as number | undefined
 }
 

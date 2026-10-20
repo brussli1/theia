@@ -1,9 +1,25 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
 import { admins, staff, staffOrOwnCustomer } from '@/access'
 import { ORDER_STATUSES, PAYMENT_METHODS } from '@/lib/constants'
 import { notifyOrderChange } from '@/lib/email/notify'
+import type { Order } from '@/payload-types'
 
+/**
+ * Staff confirm manual payments (transfer, Western Union) by moving the order
+ * past "Esperando pago". Keep the payment status in step, so the customer's
+ * order page stops showing payment instructions.
+ */
+const syncPaymentStatus: CollectionBeforeChangeHook<Order> = ({ data, originalDoc, operation }) => {
+  if (operation !== 'update' || !originalDoc) return data
+  const status = data.status ?? originalDoc.status
+  const paymentStatus = data.paymentStatus ?? originalDoc.paymentStatus
+  const leftAwaiting = originalDoc.status === 'awaiting_payment' && status !== 'awaiting_payment'
+  if (leftAwaiting && status !== 'cancelled' && paymentStatus !== 'paid' && paymentStatus !== 'refunded') {
+    return { ...data, paymentStatus: 'paid' }
+  }
+  return data
+}
 
 /**
  * Orders are created only by the checkout (server-side, prices read from the
@@ -216,6 +232,7 @@ export const Orders: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeChange: [syncPaymentStatus],
     afterChange: [notifyOrderChange],
   },
 }

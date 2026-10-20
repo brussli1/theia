@@ -7,7 +7,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { en } from '@payloadcms/translations/languages/en'
 import { es } from '@payloadcms/translations/languages/es'
 import path from 'path'
-import { buildConfig } from 'payload'
+import { buildConfig, type EmailAdapter } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
@@ -32,6 +32,17 @@ import { migrations } from './migrations'
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const serverURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
+/** Without SMTP (development), e-mails are written to the server log instead of sent. */
+const logEmailAdapter: EmailAdapter = ({ payload }) => ({
+  name: 'log',
+  defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'ventas@theia.test',
+  defaultFromName: process.env.EMAIL_FROM_NAME || 'Theia',
+  sendEmail: async (message) => {
+    const to = Array.isArray(message.to) ? message.to.join(', ') : String(message.to)
+    payload.logger.info(`E-mail (not sent, no SMTP_HOST) to ${to}: ${message.subject}`)
+  },
+})
+
 const email = process.env.SMTP_HOST
   ? nodemailerAdapter({
       defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'ventas@theia.com.py',
@@ -45,13 +56,7 @@ const email = process.env.SMTP_HOST
           : undefined,
       },
     })
-  : // Without SMTP, e-mails are written to the server log (development).
-    nodemailerAdapter({
-      defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'ventas@theia.test',
-      defaultFromName: process.env.EMAIL_FROM_NAME || 'Theia',
-      transportOptions: { jsonTransport: true },
-      skipVerify: true,
-    })
+  : logEmailAdapter
 
 export default buildConfig({
   serverURL,
