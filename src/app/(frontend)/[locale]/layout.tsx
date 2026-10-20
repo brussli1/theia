@@ -12,6 +12,7 @@ import { LocaleProvider } from '@/components/providers/LocaleProvider'
 import { isLocale, locales, type Locale } from '@/i18n/config'
 import { getSettings } from '@/lib/data'
 import { isMedia, mediaSrc } from '@/lib/media'
+import { siteNoIndex } from '@/lib/seo'
 import { getCurrency, isDraft } from '@/lib/session'
 
 import './globals.css'
@@ -46,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: shareImage ? [{ url: shareImage }] : undefined,
     },
     twitter: { card: 'summary_large_image' },
+    robots: siteNoIndex() ? { index: false, follow: false } : undefined,
   }
 }
 

@@ -1,9 +1,12 @@
 import type { MetadataRoute } from 'next'
 
+import { siteNoIndex } from '@/lib/seo'
+
 export const dynamic = 'force-dynamic'
 
 export default function robots(): MetadataRoute.Robots {
   const site = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  if (siteNoIndex()) return { rules: [{ userAgent: '*', disallow: '/' }] }
   return {
     rules: [
       {

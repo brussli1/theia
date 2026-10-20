@@ -16,6 +16,8 @@ next-env.d.ts
 # Uploaded media (Payload upload dir) and the one-time legacy export
 /media/
 /legacy-data/
+/storage/
+/deploy-bundle/
 
 # Tests
 /test-results/

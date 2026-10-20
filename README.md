@@ -11,7 +11,9 @@ One Next.js 16 app with Payload CMS 3 embedded: the storefront, the admin panel 
 - `src/collections/`, `src/globals/`, `src/blocks/` — content model (products, categories, brands, orders, quote requests, pages, posts, header/footer/settings).
 - `src/lib/` — data access, server actions, payments (`src/lib/payments/`), email, currency/geo.
 - `scripts/` — `seed-content.ts` (demo pages, posts, globals) and `import-legacy.ts` (one-time import of the previous catalog).
+- `src/migrations/` — production database migrations (run automatically on startup).
 - `compose.yaml` — development Postgres only.
+- `compose.prod.yaml`, `Dockerfile`, `deploy/` — production stack (app + Postgres + Caddy with automatic HTTPS); see `docs/deploy.md`.
 - `docs/` — agent configuration (`docs/agents/`) and research notes (`docs/research/`).
 
 ## Local development
@@ -35,6 +37,10 @@ npm run seed                # demo pages, posts, header/footer/settings
 ## Payments
 
 `PAYMENT_MODE=sandbox` (the default) simulates card (Bancard) and PayPal, so checkout works end to end without merchant accounts. Bank transfer and Western Union are manual: an admin marks the order paid. Real gateway keys go in `.env` with `PAYMENT_MODE=production`.
+
+## Production
+
+See `docs/deploy.md`: one server with Docker, currently a private client demo on an Oracle Cloud Always Free VM.
 
 ## Checks
 

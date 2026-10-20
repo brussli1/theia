@@ -44,9 +44,12 @@ export function buildMetadata({
       url: localePath(locale, path),
       images: imageUrl ? [{ url: imageUrl }] : undefined,
     },
-    robots: noIndex ? { index: false, follow: false } : undefined,
+    robots: noIndex || siteNoIndex() ? { index: false, follow: false } : undefined,
   }
 }
+
+/** SITE_NOINDEX=true hides the whole site from search engines (private demos, staging). */
+export const siteNoIndex = () => process.env.SITE_NOINDEX === 'true'
 
 export function jsonLd(data: unknown) {
   return { __html: JSON.stringify(data).replace(/</g, '\\u003c') }

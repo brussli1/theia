@@ -1,3 +1,9 @@
-// Production database migrations. Regenerate with `npm run payload migrate:create`
-// after changing collections; development uses automatic schema push instead.
-export const migrations = []
+import * as migration_20261020_210055_initial from './20261020_210055_initial';
+
+export const migrations = [
+  {
+    up: migration_20261020_210055_initial.up,
+    down: migration_20261020_210055_initial.down,
+    name: '20261020_210055_initial'
+  },
+];

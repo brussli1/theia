@@ -1,176 +1,122 @@
-# Production deployment (#18)
+# Production deployment
 
-Brings the storefront, API, database and reverse proxy up on a clean machine
-with one command. The stack is defined in `compose.prod.yaml`; this guide
-covers setup from scratch. Decisions and rationale: `docs/adr/0005-deploy.md`.
-
-## Topology
+One server runs everything with Docker Compose (`compose.prod.yaml`):
 
 ```
-Internet ──> Caddy (80/443, auto TLS) ──┬─> /api/*  /media/*  /docs*  → backend:8000
-                                        │
-                                        └─> everything else             → frontend:3000
+Internet ──> Caddy (80/443, automatic HTTPS) ──> app (Next.js + Payload, :3000) ──> db (Postgres)
+                                                  └─ images on the host: ./storage/media
 ```
 
-One public origin serves the storefront, the API and uploaded images, so
-canonical/OG URLs (`SITE_URL`) and image URLs (`MEDIA_URL`) are same-origin.
-Postgres, backend and frontend publish no ports to the host — only Caddy does.
+Only Caddy publishes ports. Pending database migrations run automatically when the app starts. Without `SMTP_HOST`, e-mails are written to the app log instead of sent.
 
-## Prerequisites
+The current target is a **private client demo** on an Oracle Cloud Always Free VM with a free DuckDNS subdomain. The same steps work on any Ubuntu VPS.
 
-- A Linux VPS with Docker Engine and the Compose plugin
-  (`docker --version` and `docker compose version` must work; on Ubuntu:
-  `apt install docker.io docker-compose-v2` or the official convenience
-  script).
-- A domain with an `A` record pointing at the server (Caddy provisions TLS
-  automatically). For bring-up/testing without a domain: `DOMAIN=localhost`
-  serves over HTTPS with a locally-issued certificate (`curl -k` or a browser
-  warning), a bare IP serves plain HTTP.
-- Open firewall ports 80 and 443.
+## 1. Server (Oracle Cloud Always Free)
 
-## 1. Get the code
+1. Create an Oracle Cloud account. It needs a card for verification; Always Free resources are not charged.
+2. **Compute → Instances → Create instance:** Ubuntu 24.04, shape **VM.Standard.A1.Flex** (Arm, Always Free). Give it as many OCPUs / GB as the free allowance shows (2 OCPU / 12 GB is plenty), add your SSH public key, and keep the public IP.
+   - If you get "out of capacity", try another availability domain or retry later.
+3. **Networking → the instance's VCN → Security list → Add ingress rules:** TCP 80 and TCP 443 from `0.0.0.0/0`.
+4. Oracle's Ubuntu images also block ports in the VM's own firewall. Over SSH, run:
+
+   ```bash
+   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+   sudo netfilter-persistent save
+   ```
+
+5. Install Docker:
+
+   ```bash
+   curl -fsSL https://get.docker.com | sudo sh
+   sudo usermod -aG docker $USER   # log out and back in
+   ```
+
+## 2. Domain (DuckDNS)
+
+Sign in at duckdns.org, create a subdomain (e.g. `theia-demo`), and set its IP to the VM's public IP. The site will be `https://theia-demo.duckdns.org`. To switch to the client's domain later, point an `A` record at the same IP and change `DOMAIN` / `NEXT_PUBLIC_SERVER_URL`.
+
+## 3. App
 
 ```bash
-git clone https://github.com/brussli1/theia.git
-cd theia
+git clone https://github.com/brussli1/theia.git && cd theia
+git checkout rebuild            # until it is merged into master
+cp .env.example .env.production
 ```
 
-## 2. Configure
+Fill in `.env.production`. Generate secrets with `openssl rand -hex 32`.
 
-```bash
-cp .env.production.example .env.production
-```
-
-Fill in `.env.production` (gitignored — never commit it):
-
-| Variable | Meaning |
+| Variable | Demo value |
 |---|---|
-| `DOMAIN` | Public origin without scheme, e.g. `theia.example.com` |
-| `POSTGRES_PASSWORD` | Postgres password; generate one |
-| `JWT_SECRET` | Session signing secret; **production refuses to start signing without it** |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Bootstraps the admin account at startup; rotate by changing + restarting |
-| `PAYMENT_MODE` | `sandbox` (simulated gateways, works out of the box) → `production` once gateway keys exist |
-| `BANCARD_*`, `PAYPAL_*` | Gateway keys — see ADR 0001 |
-| `SMTP_*`, `WHATSAPP_*` | Quote-notification channels — see ADR 0002 |
-| `SITE_URL` | The single origin knob — `https://<DOMAIN>`; the backend's gateway-return and media URLs are derived from it |
+| `DOMAIN` | `theia-demo.duckdns.org` |
+| `NEXT_PUBLIC_SERVER_URL` | `https://theia-demo.duckdns.org` |
+| `POSTGRES_PASSWORD`, `PAYLOAD_SECRET`, `PREVIEW_SECRET` | random secrets |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | first admin, created on first start |
+| `PAYMENT_MODE` | `sandbox` (no real charges) |
+| `SITE_NOINDEX` | `true` (hidden from search engines) |
 
-Generate secrets:
+Leave `DATABASE_URL` as is; compose builds it from `POSTGRES_PASSWORD`. Then lock the file down: `chmod 600 .env.production`.
 
-```bash
-openssl rand -hex 32   # POSTGRES_PASSWORD
-openssl rand -hex 32   # JWT_SECRET
-```
+## 4. Data (catalog + images)
 
-Changing `DOMAIN` later means updating `DOMAIN` and `SITE_URL` and rebuilding
-the frontend (`robots.txt` is baked at image build time).
+The demo data is a bundle built on the development machine in `deploy-bundle/` (gitignored):
+- `theia_demo.dump` — database with the imported catalog and seeded content, no users
+- `media.tgz` — images, ~630 MB
 
-The `BANCARD_*` / `PAYPAL_*` keys, `SMTP_*` and `WHATSAPP_*` credentials are
-optional until the corresponding channel goes live; with `PAYMENT_MODE=sandbox`
-and no notification credentials the whole flow works end to end with
-simulated payments and logged notifications.
-
-## 3. Start
+Copy it up and restore it before the first start:
 
 ```bash
-docker compose --env-file .env.production -f compose.prod.yaml build
-docker compose --env-file .env.production -f compose.prod.yaml up -d
+# from the development machine
+scp deploy-bundle/theia_demo.dump deploy-bundle/media.tgz ubuntu@<server-ip>:~/theia/
+
+# on the server, in ~/theia
+mkdir -p storage && tar -xzf media.tgz -C storage && sudo chown -R 1001:1001 storage/media
+C="docker compose -f compose.prod.yaml --env-file .env.production"
+$C up -d db
+$C exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner' < theia_demo.dump
+rm theia_demo.dump media.tgz
 ```
 
-(A root `Makefile` wraps this invocation: `make build`, `make up`, `make logs`,
-`make ps`, `make smoke`, `make down`.)
+Without the bundle the app still starts with an empty catalog: migrations create the tables, and content can be added in `/admin`.
 
-- Migrations run automatically at backend container start (`alembic upgrade
-  head`).
-- Uploaded product images persist on the `media_data` volume; the database on
-  `postgres_data`.
-
-## 4. Verify
+## 5. Start
 
 ```bash
-docker compose --env-file .env.production -f compose.prod.yaml ps   # all healthy
-./deploy/smoke_check.sh                                              # end-to-end checks
+$C up -d --build      # the first build takes a few minutes
+$C logs -f app        # wait for "Ready"
 ```
 
-`deploy/smoke_check.sh` verifies, through the entry point: container health,
-the storefront, `/health` (database included), catalog endpoints, the
-sitemap/robots/canonical URLs (checked against the configured `SITE_URL`),
-a writable media volume, and an admin login that returns an `admin`-role
-token (proving `JWT_SECRET` signing and admin bootstrap). With `DOMAIN=localhost`
-run it as `./deploy/smoke_check.sh https://localhost`.
+Open `https://<DOMAIN>`, sign in at `/admin` with `ADMIN_EMAIL` / `ADMIN_PASSWORD`, and check that `/robots.txt` says `Disallow: /`.
 
-Manual spot checks:
-
-```bash
-curl -I https://<DOMAIN>/
-curl https://<DOMAIN>/health
-curl https://<DOMAIN>/sitemap.xml
-```
-
-Then in a browser: browse the catalog, log in at `/admin`, upload a product
-image and confirm it renders, and run a checkout through the sandbox payment
-flow (`PAYMENT_MODE=sandbox` sends the customer straight back to the
-confirmation page, marked paid).
-
-The demo catalog is not seeded in production. If you want the demo data
-(e.g. to try the storefront before entering real products):
-
-```bash
-docker compose --env-file .env.production -f compose.prod.yaml exec backend python -m scripts.seed_demo
-```
-
-## Operations
-
-**Logs:** `docker compose --env-file .env.production -f compose.prod.yaml logs -f backend`
-
-**Update:** pull, rebuild, restart — migrations run on boot:
+## Updating
 
 ```bash
 git pull
-docker compose --env-file .env.production -f compose.prod.yaml build
-docker compose --env-file .env.production -f compose.prod.yaml up -d
+$C up -d --build      # new migrations run on startup
 ```
 
-**Backups:** the database and the media volume are the state. For example,
-nightly:
+After changing a collection, generate a migration in development (`npm run payload migrate:create <name>`) and commit it. Production never auto-pushes the schema.
+
+## Backups
 
 ```bash
-docker compose --env-file .env.production -f compose.prod.yaml exec -T postgres \
-  pg_dump -U theia theia | gzip > theia-$(date +%F).sql.gz
-docker run --rm -v theia-prod_media_data:/data -v "$PWD":/backup alpine \
-  tar czf /backup/theia-media-$(date +%F).tar.gz -C /data .
+$C exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > backup-$(date +%F).dump
+tar -czf media-$(date +%F).tgz -C storage media
 ```
 
-Restore: `gunzip -c theia-*.sql.gz | docker compose ... exec -T postgres psql -U theia theia`
-and untar the media archive into the volume.
+Keep copies off the server: free Oracle VMs can be reclaimed if idle.
 
-**Secrets rotation:** restarting the backend with a new `ADMIN_PASSWORD`
-re-hashes the admin account (id unchanged); a new `JWT_SECRET` invalidates
-every existing session token.
+## Rebuilding the demo bundle
 
-## Going live checklist
+On the development machine, with the dev Postgres running (`docker compose up -d`):
 
-1. **Payments:** complete Bancard Portal de Comercios onboarding (vPOS),
-   create the PayPal REST app, set the four gateway keys and flip
-   `PAYMENT_MODE=production` — see `docs/adr/0001-payments.md` for the wire
-   contracts that must be re-verified against the portal.
-2. **Notifications:** provide SMTP credentials, and/or WhatsApp Business API
-   credentials — see `docs/adr/0002-quotes.md`. **First-contact quote leads
-   need a pre-approved WhatsApp template** (free text only works inside the
-   24-hour window after a customer writes first); decide the template or ship
-   the confirmation-page links only.
-3. **Verify the OG images** on a product page after going live: the backend
-   returns absolute image URLs from `MEDIA_URL`, so they must point at the
-   production origin.
-4. Re-run `./deploy/smoke_check.sh` with `PAYMENT_MODE=production` — the
-   admin-login check still must pass.
+1. `create database theia_demo`. Set `DATABASE_URL` to it, `NODE_ENV=production` (so Payload uses migrations, not schema push), and `MEDIA_DIR` to an empty folder.
+2. `npm run payload migrate`.
+3. Move `legacy-data/import-state.json` aside: it maps images to the dev database's IDs. Then run `npm run import:legacy` (~10 min) and `npm run seed`. Put the original state file back afterwards.
+4. `delete from users` (so the server creates its own admin), then `pg_dump -Fc --no-owner` and tar the media folder into `deploy-bundle/`.
 
-## Troubleshooting
+## Going live later
 
-| Symptom | Cause / fix |
-|---|---|
-| `docker compose ... config` fails with "required variable is not set" | A mandatory variable (e.g. `JWT_SECRET`, `POSTGRES_PASSWORD`, `DOMAIN`) is missing from `.env.production` |
-| Backend container restarts in a loop | Database unreachable or migration failed — `docker compose ... logs backend` |
-| Storefront 502s | Frontend still booting (first request compiles) or crashed — `logs frontend` |
-| Admin login says invalid credentials | `ADMIN_EMAIL`/`ADMIN_PASSWORD` not set when the backend started (bootstrap runs at startup) — set them and restart |
-| Certificate issues | Caddy auto-provisions on first request for real domains; check DNS `A` record and that ports 80/443 are reachable |
-| Image uploads vanish after restart | `media_data` volume missing from the compose file — never edit it away |
+- Set `SITE_NOINDEX=false` and use the client's domain.
+- Configure SMTP (`SMTP_*`), so quote and order notifications reach the store; also set the notification address in **Ajustes**.
+- For real card or PayPal payments: add the gateway keys and set `PAYMENT_MODE=production`. Methods without keys are hidden automatically; transfer and Western Union always work.

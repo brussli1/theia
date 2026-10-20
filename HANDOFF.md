@@ -10,6 +10,8 @@
 - **Payment providers come later** (owner decision). Keep `PAYMENT_MODE=sandbox`; card (Bancard) and PayPal are simulated, transfer and Western Union are manual. No payment work until merchant accounts arrive.
 - **Smoke-tested end to end (session 16):** all storefront routes, admin API/panel, sandbox checkout for card, PayPal and transfer, declined payment, admin confirming a transfer, and a quote request. Test orders were deleted afterwards. Fixed along the way: legacy import re-run crash (slug normalization), admin "Pagado" not updating `paymentStatus`, dev e-mails silently discarded (now logged).
 - Not yet tested: customer signup/login/password reset, used-equipment pages (0 items), English checkout.
+- **Production stack added and tested locally:** initial migration (`src/migrations/20261020_210055_initial.ts`), `Dockerfile`, `compose.prod.yaml`, `deploy/Caddyfile`, `SITE_NOINDEX` flag, and the rewritten `docs/deploy.md`. A full local run (HTTPS via Caddy, restored demo data) passed: pages, images, admin login, quote request, upload, noindex.
+- **Demo bundle** in `deploy-bundle/` (gitignored): `theia_demo.dump` (migrated schema + 661 products + seed, no users) and `media.tgz` (~630 MB). Rebuild steps are in `docs/deploy.md`.
 
 ## What the rebuild contains
 
@@ -21,10 +23,11 @@
 
 ## Next steps (in order)
 
-1. **Tests:** `package.json` has `test:unit` (vitest) and `test:e2e` (Playwright) scripts, but no configs or test files exist. Cover: catalog browse, cart → sandbox checkout → order page, quote request, signup/login, admin marks order paid.
-2. **Production readiness:** `src/migrations/index.ts` is empty — generate the initial migration (`npm run payload migrate:create`). Add a production Dockerfile + `compose.prod.yaml` + reverse proxy. `docs/deploy.md` still describes the deleted FastAPI stack — rewrite it.
-3. **Issue triage on GitHub:** #20, #25, #28, #29 target the old backend — close or re-scope. Check whether the rebuild's design already covers #30/#31. #1 (MVP epic) stays open.
-4. **Payments (later):** when providers are chosen, set keys in `.env`, `PAYMENT_MODE=production`, and test against each gateway's sandbox. Background: `docs/research/card-payments-paraguay.md`.
+1. **Deploy the private demo:** the owner creates the Oracle Cloud Always Free Arm VM, opens ports 80/443, makes a DuckDNS subdomain, and shares SSH. Then follow `docs/deploy.md` sections 1–5 with `SITE_NOINDEX=true` and `PAYMENT_MODE=sandbox`.
+2. **Tests:** `package.json` has `test:unit` (vitest) and `test:e2e` (Playwright) scripts, but no configs or test files exist. Cover: catalog browse, cart → sandbox checkout → order page, quote request, signup/login, admin marks order paid.
+3. **Before a public launch:** SMTP for notifications, the client's content (contact, bank instructions, prices, logo), the client's domain, `SITE_NOINDEX=false`.
+4. **Issue triage on GitHub:** #20, #25, #28, #29 target the old backend — close or re-scope. Check whether the rebuild's design already covers #30/#31. #1 (MVP epic) stays open.
+5. **Payments (later):** when providers are chosen, set keys in `.env.production`, set `PAYMENT_MODE=production`, and test against each gateway's sandbox. Background: `docs/research/card-payments-paraguay.md`.
 
 ## Gotchas
 
@@ -36,7 +39,9 @@
 - On a declined payment, the order page still headlines "¡Gracias por tu compra!" above the failure notice — minor copy issue, not fixed.
 - `.npmrc` sets `legacy-peer-deps=true` — came with the rebuild, presumably for peer-range conflicts; don't remove without checking `npm install` still works.
 - Dev Postgres is on **5433**, database `theia_site` (not `theia` as in the old stack).
-- Development uses Payload schema push; production must use migrations — regenerate after any collection change.
+- Development uses Payload schema push; production must use migrations — run `npm run payload migrate:create <name>` after any collection change and commit it. When running scripts against a migrated DB, set `NODE_ENV=production`, or Payload's dev push will alter it.
+- The production image's `nextjs` user is uid **1001**: `storage/media` on the server must be owned by 1001 or uploads fail.
+- `NEXT_PUBLIC_SERVER_URL` is baked in at build time and must match the browser origin exactly, including the port; otherwise admin cookie auth (CSRF check) fails. Rebuild after changing it.
 - `media/` (Payload uploads) and `legacy-data/` are gitignored — never commit them.
 - `CONTEXT.md` glossary was written for the old stack; terms still apply but check details (e.g. order statuses, Payment model) against `src/collections/Orders.ts`.
 - `AGENTS.md` mentions `docs/adr/` — it does not exist yet.
