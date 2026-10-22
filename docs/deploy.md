@@ -9,27 +9,26 @@ Internet ──> Caddy (80/443, automatic HTTPS) ──> app (Next.js + Payload,
 
 Only Caddy publishes ports. Pending database migrations run automatically when the app starts. Without `SMTP_HOST`, e-mails are written to the app log instead of sent.
 
-The current target is a **private client demo** on an Oracle Cloud Always Free VM with a free DuckDNS subdomain. The same steps work on any Ubuntu VPS.
+The current **private client demo is self-hosted** on the development machine and published with Tailscale Funnel, at no cost: see *Self-hosting* at the end. Sections 1–5 cover a real server (a small Hetzner Cloud server with a free DuckDNS subdomain, or any Ubuntu VPS) for when the demo needs to be always on. (Oracle Cloud's free tier was tried first, but it had no capacity.)
 
-## 1. Server (Oracle Cloud Always Free)
+## 1. Server (Hetzner Cloud)
 
-1. Create an Oracle Cloud account. It needs a card for verification; Always Free resources are not charged.
-2. **Compute → Instances → Create instance:** Ubuntu 24.04, shape **VM.Standard.A1.Flex** (Arm, Always Free). Give it as many OCPUs / GB as the free allowance shows (2 OCPU / 12 GB is plenty), add your SSH public key, and keep the public IP.
-   - If you get "out of capacity", try another availability domain or retry later.
-3. **Networking → the instance's VCN → Security list → Add ingress rules:** TCP 80 and TCP 443 from `0.0.0.0/0`.
-4. Oracle's Ubuntu images also block ports in the VM's own firewall. Over SSH, run:
-
-   ```bash
-   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
-   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
-   sudo netfilter-persistent save
-   ```
-
-5. Install Docker:
+1. Create an account at console.hetzner.cloud and a project.
+2. **Add Server:**
+   - Location: any EU site for Arm (Falkenstein, Nuremberg, Helsinki).
+   - Image: **Ubuntu 24.04**.
+   - Type: **Shared vCPU → Arm64 (Ampere) → CAX11** (2 vCPU, 4 GB). CAX21 (8 GB) gives more headroom.
+   - Networking: public IPv4 on (DuckDNS needs IPv4).
+   - SSH key: paste the public key (`~/.ssh/oracle-theia.key.pub` on the development machine). No root password is set, so SSH keys are the only way in.
+   - Note the server's IPv4 address. The login user is `root`.
+3. Ports are open by default. Optionally add a Hetzner **Firewall** allowing only TCP 22, 80 and 443.
+4. Over SSH (`ssh -i ~/.ssh/oracle-theia.key root@<ip>`), install Docker and add swap. 4 GB is tight for `next build`:
 
    ```bash
-   curl -fsSL https://get.docker.com | sudo sh
-   sudo usermod -aG docker $USER   # log out and back in
+   apt-get update && apt-get -y upgrade
+   curl -fsSL https://get.docker.com | sh
+   fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+   echo '/swapfile none swap sw 0 0' >> /etc/fstab
    ```
 
 ## 2. Domain (DuckDNS)
@@ -67,10 +66,10 @@ Copy it up and restore it before the first start:
 
 ```bash
 # from the development machine
-scp deploy-bundle/theia_demo.dump deploy-bundle/media.tgz ubuntu@<server-ip>:~/theia/
+scp -i ~/.ssh/oracle-theia.key deploy-bundle/theia_demo.dump deploy-bundle/media.tgz root@<server-ip>:~/theia/
 
 # on the server, in ~/theia
-mkdir -p storage && tar -xzf media.tgz -C storage && sudo chown -R 1001:1001 storage/media
+mkdir -p storage && tar -xzf media.tgz -C storage && chown -R 1001:1001 storage/media
 C="docker compose -f compose.prod.yaml --env-file .env.production"
 $C up -d db
 $C exec -T db sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner' < theia_demo.dump
@@ -104,7 +103,7 @@ $C exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > backup-$(
 tar -czf media-$(date +%F).tgz -C storage media
 ```
 
-Keep copies off the server: free Oracle VMs can be reclaimed if idle.
+Keep copies off the server. Hetzner's paid backups (+20% of the server price) also snapshot the whole server daily.
 
 ## Rebuilding the demo bundle
 
@@ -120,3 +119,35 @@ On the development machine, with the dev Postgres running (`docker compose up -d
 - Set `SITE_NOINDEX=false` and use the client's domain.
 - Configure SMTP (`SMTP_*`), so quote and order notifications reach the store; also set the notification address in **Ajustes**.
 - For real card or PayPal payments: add the gateway keys and set `PAYMENT_MODE=production`. Methods without keys are hidden automatically; transfer and Western Union always work.
+
+## Self-hosting (Tailscale Funnel)
+
+Runs the same production stack on the development machine (WSL + Docker). Caddy is replaced by **Tailscale Funnel**, which gives a fixed public HTTPS address (`https://<machine>.<tailnet>.ts.net`) and needs no router setup. `compose.selfhost.yaml` publishes the app on `127.0.0.1:3100` and leaves Caddy off.
+
+Current demo: **https://simbiosi-1.tail8091a.ts.net** (Docker project `theia-demo`, WSL Tailscale node `simbiosi-1`).
+
+```bash
+C="docker compose -p theia-demo -f compose.prod.yaml -f compose.selfhost.yaml --env-file .env.production"
+```
+
+First time:
+1. Write `.env.production` as in section 3, with `DOMAIN=<machine>.<tailnet>.ts.net`, `NEXT_PUBLIC_SERVER_URL=https://$DOMAIN`, `SITE_NOINDEX=true` and `PAYMENT_MODE=sandbox`.
+2. Restore the data as in section 4, but locally. Unpack `deploy-bundle/media.tgz` into `storage/`, then fix ownership without sudo:
+
+   ```bash
+   docker run --rm -v "$PWD/storage/media:/m" alpine chown -R 1001:1001 /m
+   ```
+
+   Then `$C up -d db` and run `pg_restore` with the dump.
+3. `$C up -d --build`, then check `http://127.0.0.1:3100`.
+4. Publish it from the **WSL** shell, the node whose name is in `DOMAIN`: `sudo tailscale funnel --bg 3100`.
+   - The first time, Tailscale may print a link to enable Funnel for the tailnet; open it, approve, and rerun.
+   - `tailscale funnel status` should list `https://<DOMAIN> (Funnel on)`.
+   - `sudo tailscale funnel --https=443 off` takes it offline.
+   - Testing the URL from a tailnet device reaches it privately; test from a phone on mobile data to see what the client sees.
+
+Day to day:
+- The link works only while this PC is **on and awake**, with WSL and Docker running. The containers restart by themselves when Docker starts, and the Funnel setting survives reboots. Disable Windows sleep while the client is reviewing.
+- To update after code changes, run `git pull` (or work locally), then `$C up -d --build`.
+- Page and image speed is limited by the home upload bandwidth.
+- Moving to a server later: back up with the commands under *Backups* (using `$C`), and restore on the server.

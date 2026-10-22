@@ -40,7 +40,7 @@ npm run seed                # demo pages, posts, header/footer/settings
 
 ## Production
 
-See `docs/deploy.md`: one server with Docker, currently a private client demo on an Oracle Cloud Always Free VM.
+See `docs/deploy.md`: one server with Docker, currently a private client demo self-hosted on the development machine and published with Tailscale Funnel (`compose.selfhost.yaml`).
 
 ## Checks
 

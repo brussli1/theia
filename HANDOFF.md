@@ -23,7 +23,7 @@
 
 ## Next steps (in order)
 
-1. **Deploy the private demo:** the owner creates the Oracle Cloud Always Free Arm VM, opens ports 80/443, makes a DuckDNS subdomain, and shares SSH. Then follow `docs/deploy.md` sections 1–5 with `SITE_NOINDEX=true` and `PAYMENT_MODE=sandbox`.
+1. **Private demo (self-hosted, free):** the owner wants no paid hosting yet (Oracle's free tier had no capacity; Hetzner was declined for cost). The demo runs on this machine as Docker project `theia-demo` (`compose.prod.yaml` + `compose.selfhost.yaml`, app on 127.0.0.1:3100, secrets in gitignored `.env.production`) and is published with Tailscale Funnel at https://simbiosi-1.tail8091a.ts.net. The owner turns Funnel on and off themselves: the agent's auto mode blocks opening ingress tunnels. See `docs/deploy.md` → Self-hosting. A real server (Hetzner CAX11, SSH key `~/.ssh/oracle-theia.key`) is documented for later.
 2. **Tests:** `package.json` has `test:unit` (vitest) and `test:e2e` (Playwright) scripts, but no configs or test files exist. Cover: catalog browse, cart → sandbox checkout → order page, quote request, signup/login, admin marks order paid.
 3. **Before a public launch:** SMTP for notifications, the client's content (contact, bank instructions, prices, logo), the client's domain, `SITE_NOINDEX=false`.
 4. **Issue triage on GitHub:** #20, #25, #28, #29 target the old backend — close or re-scope. Check whether the rebuild's design already covers #30/#31. #1 (MVP epic) stays open.
