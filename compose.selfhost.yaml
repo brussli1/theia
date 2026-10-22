@@ -1,0 +1,14 @@
+# Self-hosting override: run the production stack on this machine and publish
+# it with Tailscale Funnel (which handles HTTPS), instead of Caddy on a server.
+#   docker compose -p theia-demo -f compose.prod.yaml -f compose.selfhost.yaml --env-file .env.production up -d --build
+#   tailscale funnel --bg 3100
+# See docs/deploy.md, "Self-hosting".
+services:
+  app:
+    ports:
+      # Local only; Tailscale Funnel forwards public HTTPS traffic here.
+      - "127.0.0.1:3100:3000"
+
+  caddy:
+    # Not needed: Tailscale terminates HTTPS. Never started unless this profile is requested.
+    profiles: ["caddy"]

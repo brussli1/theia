@@ -1,0 +1,72 @@
+.theia-dashboard {
+  margin-bottom: 2.5rem;
+  display: grid;
+  gap: 1.25rem;
+
+  &__intro {
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: linear-gradient(120deg, #0b3b5c, #0e6f7a);
+    color: #fff;
+
+    h2 {
+      margin: 0 0 0.5rem;
+      color: #fff;
+    }
+
+    p {
+      margin: 0;
+      max-width: 52rem;
+      line-height: 1.55;
+      opacity: 0.92;
+    }
+  }
+
+  &__site {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    background: #fff;
+    color: #0b3b5c;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  &__stats,
+  &__shortcuts {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  &__stat,
+  &__shortcut {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    border: 1px solid var(--theme-elevation-150);
+    background: var(--theme-elevation-0);
+    color: var(--theme-text);
+    text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+
+    &:hover {
+      border-color: #0e9f9a;
+      transform: translateY(-1px);
+    }
+
+    span {
+      color: var(--theme-elevation-600);
+      font-size: 0.9rem;
+    }
+  }
+
+  &__value {
+    font-size: 1.9rem !important;
+    font-weight: 700;
+    color: var(--theme-text) !important;
+  }
+}

@@ -1,21 +1,5 @@
-# Theia production entry point (#18): one origin serves the storefront, the
-# API and uploaded media, so canonical/OG URLs (SITE_URL / MEDIA_URL) and the
-# browser's requests stay same-origin. The virtual host comes from the DOMAIN
-# env var; Caddy serves plain HTTP for localhost/bare IPs and provisions TLS
-# automatically (Let's Encrypt) for real domains.
-#
-# The backend keeps its own router prefixes (/api, /media, /docs,
-# /openapi.json); everything else belongs to the Next.js storefront.
-
+# Caddy gets and renews the HTTPS certificate for $DOMAIN automatically.
 {$DOMAIN} {
 	encode zstd gzip
-
-	@backend path /api/* /media/* /docs /docs/* /openapi.json /health
-	handle @backend {
-		reverse_proxy backend:8000
-	}
-
-	handle {
-		reverse_proxy frontend:3000
-	}
+	reverse_proxy app:3000
 }
